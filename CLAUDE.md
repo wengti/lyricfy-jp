@@ -146,6 +146,30 @@ This URI is displayed with a copy button in `/settings` under the Spotify tutori
 
 ---
 
+## Git & GitHub
+
+Repository: **https://github.com/wengti/lyricfy-jp**
+
+After completing each feature or fix, commit and push with a concise message following this format:
+
+```
+<type>: <short description>
+```
+
+Types: `feat`, `fix`, `refactor`, `style`, `chore`
+
+Examples:
+- `feat: add dark mode with system preference detection`
+- `fix: skip furigana for Chinese and non-Japanese lyrics`
+- `refactor: move Spotify keys to server environment variables`
+
+Rules:
+- One commit per logical feature or fix — don't batch unrelated changes
+- Keep the subject line under 72 characters
+- No trailing period
+
+---
+
 ## Component Conventions
 
 - Server components fetch data directly from Supabase (no API round-trip).
