@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Music, Link as LinkIcon, AlertTriangle, Navigation } from 'lucide-react'
 import { useNowPlaying } from '@/hooks/useNowPlaying'
@@ -34,9 +34,13 @@ export default function LyricsPage() {
     ? { lines: manualLines, synced: false, notFound: false, isJapanese: true, wasRomaji: false, source: 'manual' as const }
     : lyricsResult
 
-  const rawLines = activeLyricsResult?.isJapanese
-    ? activeLyricsResult.lines.map((l) => l.text)
-    : null
+  const rawLines = useMemo(
+    () => activeLyricsResult?.isJapanese ? activeLyricsResult.lines.map((l) => l.text) : null,
+    // Depend on track id + manual lines identity so this only recomputes when the song or manual input changes,
+    // not on every progress-tick re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [track?.id, manualLines]
+  )
 
   const { translatedLines, loading: furiganaLoading, error: furiganaError } = useFurigana(rawLines, track?.name ?? null, track?.artist ?? null)
   const { addEntry } = useDictionary()
