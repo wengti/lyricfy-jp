@@ -13,13 +13,13 @@ export default function SessionSummary({ gotIt, missed, onRetryMissed, onStartOv
 
   return (
     <div className="mx-auto max-w-md text-center">
-      <div className="mb-2 text-5xl font-bold text-gray-900">{pct}%</div>
-      <p className="mb-1 text-gray-500">
+      <div className="mb-2 text-5xl font-bold text-gray-900 dark:text-gray-100">{pct}%</div>
+      <p className="mb-1 text-gray-500 dark:text-gray-400">
         {gotIt.length} of {total} correct
       </p>
 
       {/* Score bar */}
-      <div className="mx-auto mt-4 mb-8 h-3 w-full max-w-xs overflow-hidden rounded-full bg-gray-100">
+      <div className="mx-auto mt-4 mb-8 h-3 w-full max-w-xs overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
         <div
           className="h-full rounded-full bg-green-400 transition-all duration-500"
           style={{ width: `${pct}%` }}
@@ -28,12 +28,12 @@ export default function SessionSummary({ gotIt, missed, onRetryMissed, onStartOv
 
       {missed.length > 0 && (
         <div className="mb-6">
-          <p className="mb-3 text-sm font-medium text-gray-600">Words to review ({missed.length}):</p>
+          <p className="mb-3 text-sm font-medium text-gray-600 dark:text-gray-400">Words to review ({missed.length}):</p>
           <div className="space-y-2 text-left">
             {missed.map((e) => (
-              <div key={e.id} className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-2">
-                <span className="font-medium text-red-800">{e.japanese_text}</span>
-                <span className="text-sm text-red-500">{e.english_translation}</span>
+              <div key={e.id} className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-2 dark:border-red-800 dark:bg-red-900/30">
+                <span className="font-medium text-red-800 dark:text-red-300">{e.japanese_text}</span>
+                <span className="text-sm text-red-500 dark:text-red-400">{e.english_translation}</span>
               </div>
             ))}
           </div>
@@ -51,7 +51,7 @@ export default function SessionSummary({ gotIt, missed, onRetryMissed, onStartOv
         )}
         <button
           onClick={onStartOver}
-          className="rounded-xl border border-gray-300 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="rounded-xl border border-gray-300 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
         >
           New session
         </button>

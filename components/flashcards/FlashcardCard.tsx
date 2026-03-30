@@ -39,27 +39,27 @@ export default function FlashcardCard({ entry, mode, onGotIt, onMissed }: Props)
         >
           {/* Front */}
           <div
-            className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-md"
+            className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900"
             style={{ backfaceVisibility: 'hidden' }}
           >
-            <p className="text-3xl font-bold text-gray-900">{front}</p>
-            {frontSub && <p className="mt-2 text-base text-gray-400">{frontSub}</p>}
+            <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{front}</p>
+            {frontSub && <p className="mt-2 text-base text-gray-400 dark:text-gray-500">{frontSub}</p>}
             {!flipped && (
-              <p className="mt-6 text-xs text-gray-300">Tap to reveal</p>
+              <p className="mt-6 text-xs text-gray-300 dark:text-gray-600">Tap to reveal</p>
             )}
           </div>
 
           {/* Back */}
           <div
-            className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50 shadow-md"
+            className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50 shadow-md dark:border-indigo-800 dark:bg-indigo-900/30"
             style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
           >
-            <p className="text-2xl font-bold text-indigo-900">{back}</p>
-            {backSub && <p className="mt-2 text-base text-indigo-400">{backSub}</p>}
+            <p className="text-2xl font-bold text-indigo-900 dark:text-indigo-100">{back}</p>
+            {backSub && <p className="mt-2 text-base text-indigo-400 dark:text-indigo-400">{backSub}</p>}
             {entry.example_japanese && (
               <div className="mt-4 px-6 text-center">
-                <p className="text-sm text-indigo-700">{entry.example_japanese}</p>
-                <p className="text-xs text-indigo-400">{entry.example_english}</p>
+                <p className="text-sm text-indigo-700 dark:text-indigo-300">{entry.example_japanese}</p>
+                <p className="text-xs text-indigo-400 dark:text-indigo-500">{entry.example_english}</p>
               </div>
             )}
           </div>
@@ -71,13 +71,13 @@ export default function FlashcardCard({ entry, mode, onGotIt, onMissed }: Props)
         <div className="flex gap-4">
           <button
             onClick={onMissed}
-            className="rounded-xl border border-red-200 bg-red-50 px-8 py-3 text-sm font-medium text-red-600 hover:bg-red-100"
+            className="rounded-xl border border-red-200 bg-red-50 px-8 py-3 text-sm font-medium text-red-600 hover:bg-red-100 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
           >
             Missed
           </button>
           <button
             onClick={onGotIt}
-            className="rounded-xl border border-green-200 bg-green-50 px-8 py-3 text-sm font-medium text-green-700 hover:bg-green-100"
+            className="rounded-xl border border-green-200 bg-green-50 px-8 py-3 text-sm font-medium text-green-700 hover:bg-green-100 dark:border-green-800 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50"
           >
             Got it!
           </button>

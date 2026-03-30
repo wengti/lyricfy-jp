@@ -45,18 +45,20 @@ export default function LyricsDisplay({
 
   return (
     <div>
-      {/* Controls */}
-      <div className="mb-4 flex items-center justify-end gap-3">
-        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none dark:text-gray-400">
-          <input
-            type="checkbox"
-            checked={showTranslation}
-            onChange={(e) => setShowTranslation(e.target.checked)}
-            className="rounded"
-          />
-          Show translations
-        </label>
-      </div>
+      {/* Controls — only shown when translations are available */}
+      {translatedLines && (
+        <div className="mb-4 flex items-center justify-end gap-3">
+          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none dark:text-gray-400">
+            <input
+              type="checkbox"
+              checked={showTranslation}
+              onChange={(e) => setShowTranslation(e.target.checked)}
+              className="rounded"
+            />
+            Show translations
+          </label>
+        </div>
+      )}
 
       {/* Lines */}
       <div className="space-y-1" onMouseUp={handleMouseUp}>

@@ -28,7 +28,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="mb-8 text-2xl font-bold text-gray-900">Settings</h1>
+      <h1 className="mb-8 text-2xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
       <SettingsForm savedKeys={savedKeys} appUrl={appUrl} />
     </div>
   )

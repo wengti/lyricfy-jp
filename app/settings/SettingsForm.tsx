@@ -75,10 +75,10 @@ export default function SettingsForm({ savedKeys }: Props) {
 
       {/* OpenRouter */}
       <section>
-        <h2 className="mb-1 text-base font-semibold text-gray-900">OpenRouter</h2>
-        <p className="mb-4 text-sm text-gray-500">
+        <h2 className="mb-1 text-base font-semibold text-gray-900 dark:text-gray-100">OpenRouter</h2>
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
           Used for AI furigana annotations, English translations, word enrichment, and romaji conversion.
-          The free <code className="rounded bg-gray-100 px-1 text-xs">google/gemma-3-27b-it:free</code> model is used.
+          The free <code className="rounded bg-gray-100 px-1 text-xs dark:bg-gray-800 dark:text-gray-300">google/gemma-3-27b-it:free</code> model is used.
         </p>
         <TutorialAccordion service="OpenRouter" steps={OPENROUTER_STEPS} />
         <ApiKeyInput
@@ -93,8 +93,8 @@ export default function SettingsForm({ savedKeys }: Props) {
 
       {/* Genius */}
       <section>
-        <h2 className="mb-1 text-base font-semibold text-gray-900">Genius</h2>
-        <p className="mb-4 text-sm text-gray-500">
+        <h2 className="mb-1 text-base font-semibold text-gray-900 dark:text-gray-100">Genius</h2>
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
           Used as a fallback lyrics source when lrclib.net doesn&apos;t have a song. Free to use.
         </p>
         <TutorialAccordion service="Genius" steps={GENIUS_STEPS} />
@@ -109,7 +109,7 @@ export default function SettingsForm({ savedKeys }: Props) {
       </section>
 
       {/* Save */}
-      <div className="flex items-center gap-4 border-t border-gray-100 pt-6">
+      <div className="flex items-center gap-4 border-t border-gray-100 pt-6 dark:border-gray-800">
         <button
           type="submit"
           disabled={status === 'saving'}
@@ -120,16 +120,16 @@ export default function SettingsForm({ savedKeys }: Props) {
         </button>
 
         {status === 'success' && (
-          <span className="flex items-center gap-1.5 text-sm text-green-600">
+          <span className="flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
             <CheckCircle2 size={15} />
             Keys saved successfully
           </span>
         )}
         {status === 'error' && errorMsg && (
-          <span className="text-sm text-red-600">{errorMsg}</span>
+          <span className="text-sm text-red-600 dark:text-red-400">{errorMsg}</span>
         )}
         {updatedAt && status === 'idle' && (
-          <span className="text-xs text-gray-400">Last updated: {updatedAt}</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">Last updated: {updatedAt}</span>
         )}
       </div>
     </form>
