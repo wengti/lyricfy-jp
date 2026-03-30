@@ -1,5 +1,5 @@
 const OPENROUTER_BASE = 'https://openrouter.ai/api/v1'
-const MODEL = 'meta-llama/llama-3.1-8b-instruct'
+const MODEL = 'google/gemma-3-27b-it'
 
 interface OpenRouterMessage {
   role: 'user' | 'assistant' | 'system'
