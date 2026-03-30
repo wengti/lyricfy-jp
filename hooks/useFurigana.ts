@@ -52,7 +52,12 @@ export function useFurigana(lines: string[] | null, track: string | null, artist
       })
       .finally(() => setLoading(false))
 
-    return () => controller.abort()
+    return () => {
+      controller.abort()
+      // Reset lastKey so that if this effect re-runs (e.g. React Strict Mode double-invoke
+      // or song change) the same key is allowed to trigger a fresh fetch.
+      lastKey.current = null
+    }
   }, [lines, track, artist])
 
   return { translatedLines, loading, error }
