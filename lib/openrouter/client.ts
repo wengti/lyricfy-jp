@@ -39,7 +39,7 @@ export async function openRouterChat(options: OpenRouterOptions): Promise<string
 
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 60_000)
+    const timeout = setTimeout(() => controller.abort(), 90_000)
 
     let res: Response
     try {
@@ -51,7 +51,16 @@ export async function openRouterChat(options: OpenRouterOptions): Promise<string
       })
     } catch (e) {
       clearTimeout(timeout)
-      throw new Error(e instanceof Error && e.name === 'AbortError' ? 'OpenRouter request timed out after 60s' : String(e))
+      // Timeout — retry with backoff rather than failing immediately
+      if (e instanceof Error && e.name === 'AbortError') {
+        lastError = new Error('OpenRouter request timed out')
+        if (attempt < RETRY_DELAYS_MS.length) {
+          await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]))
+          continue
+        }
+        break
+      }
+      throw new Error(String(e))
     }
     clearTimeout(timeout)
 
