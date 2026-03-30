@@ -69,7 +69,6 @@ export default function LyricsPage() {
   }, [])
 
   const progressMs = playing?.progressMs ?? 0
-  const wasRomaji = activeLyricsResult?.wasRomaji ?? false
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
@@ -135,13 +134,6 @@ export default function LyricsPage() {
         </div>
       )}
 
-      {/* Romaji converted notice */}
-      {wasRomaji && (
-        <div className="mb-4 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-600 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-          These lyrics were in romaji — converted to Japanese script by AI. May not be 100% accurate.
-        </div>
-      )}
-
       {/* Lyrics not found */}
       {activeLyricsResult?.notFound && !manualLines && (
         <ManualLyricsInput onSubmit={setManualLines} />
@@ -162,14 +154,14 @@ export default function LyricsPage() {
       )}
 
       {/* Main lyrics display */}
-      {activeLyricsResult?.isJapanese && !furiganaLoading && activeLyricsResult.lines.length > 0 && (
+      {activeLyricsResult && activeLyricsResult.lines.length > 0 && (!activeLyricsResult.isJapanese || !furiganaLoading) && (
         <LyricsDisplay
           lines={activeLyricsResult.lines}
           synced={activeLyricsResult.synced}
-          translatedLines={translatedLines}
+          translatedLines={activeLyricsResult.isJapanese ? translatedLines : null}
           progressMs={progressMs}
           autoScroll={autoScroll}
-          onSelectPhrase={(phrase) => setSelectedPhrase(phrase)}
+          onSelectPhrase={activeLyricsResult.isJapanese ? (phrase) => setSelectedPhrase(phrase) : undefined}
         />
       )}
 
