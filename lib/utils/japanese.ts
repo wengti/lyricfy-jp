@@ -13,10 +13,14 @@ export function isRomaji(text: string): boolean {
   return /[a-zA-Z]/.test(text)
 }
 
-/** Check all lines collectively */
+/** Check all lines collectively.
+ *  Japanese is identified by the presence of hiragana or katakana — kanji alone
+ *  is not sufficient because Chinese lyrics share the same CJK Unicode block.
+ */
 export function detectScript(lines: string[]): 'japanese' | 'romaji' | 'other' {
   const combined = lines.join(' ')
-  if (hasJapaneseChars(combined)) return 'japanese'
+  const hasKana = HIRAGANA_RANGE.test(combined) || KATAKANA_RANGE.test(combined)
+  if (hasKana) return 'japanese'
   if (isRomaji(combined)) return 'romaji'
   return 'other'
 }

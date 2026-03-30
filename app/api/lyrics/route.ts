@@ -57,7 +57,7 @@ export async function GET(request: Request) {
     synced: result.synced,
     notFound: false,
     isJapanese: script === 'japanese',
-    wasRomaji: script === 'romaji',
+    wasRomaji: false,
   }
 
   return NextResponse.json(response)
