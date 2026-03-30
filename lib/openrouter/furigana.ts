@@ -14,26 +14,32 @@ export async function generateFuriganaAndTranslations(
   lines: string[],
   apiKey: string
 ): Promise<TranslatedLine[]> {
-  const prompt = `You are a Japanese language expert. Given the following Japanese lyrics lines, return a JSON object with:
-- "furigana": array of arrays, one per line. Each inner array contains objects {"original": "kanji or kana", "reading": "hiragana reading or null if no annotation needed"}
-- "translations": array of English translations, one per line (natural, not literal)
+  const prompt = `You are a Japanese language expert. Return ONLY a JSON object — no intro, no explanation, no markdown.
 
-Lines:
-${lines.map((l, i) => `${i + 1}. ${l}`).join('\n')}
+JSON format:
+{"furigana":[[{"original":"...","reading":"..."},...],...],"translations":["...",...]}
 
 Rules:
-- For pure hiragana/katakana tokens, set reading to null
-- For kanji or mixed kanji+kana, provide the hiragana reading
-- Keep translations concise and natural
-- Return ONLY valid JSON, no explanation`
+- "furigana": one inner array per line; each object has "original" (the token) and "reading" (hiragana, or null for pure kana)
+- "translations": one natural English translation per line
+- Output must start with { and end with }
+
+Lines:
+${lines.map((l, i) => `${i + 1}. ${l}`).join('\n')}`
 
   const content = await openRouterChat({
     apiKey,
-    messages: [{ role: 'user', content: prompt }],
+    messages: [
+      { role: 'system', content: 'You output only valid JSON. No prose, no markdown, no explanation.' },
+      { role: 'user', content: prompt },
+    ],
     temperature: 0.1,
   })
 
-  const parsed = JSON.parse(content) as FuriganaResponse
+  // Extract the JSON object even if the model adds surrounding text
+  const jsonMatch = content.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) throw new Error('No JSON object found in model response')
+  const parsed = JSON.parse(jsonMatch[0]) as FuriganaResponse
 
   return lines.map((_, i) => ({
     tokens: (parsed.furigana[i] ?? []).map((t) => ({
