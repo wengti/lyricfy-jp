@@ -38,17 +38,16 @@ export async function POST(request: Request) {
     }
   }
 
-  // Process in batches sequentially to avoid rate limits and keep each call short
+  // Process batches in parallel — faster for songs with multiple batches
   try {
     const batches: string[][] = []
     for (let i = 0; i < lines.length; i += BATCH_SIZE) {
       batches.push(lines.slice(i, i + BATCH_SIZE))
     }
-    const all: Awaited<ReturnType<typeof generateFuriganaAndTranslations>> = []
-    for (const batch of batches) {
-      const result = await generateFuriganaAndTranslations(batch, apiKey)
-      all.push(...result)
-    }
+    const results = await Promise.all(
+      batches.map((batch) => generateFuriganaAndTranslations(batch, apiKey))
+    )
+    const all = results.flat()
 
     // Store in cache for future requests
     if (track && artist) {
