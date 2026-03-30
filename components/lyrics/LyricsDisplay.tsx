@@ -8,6 +8,7 @@ interface Props {
   lines: LrcLine[]
   synced: boolean
   translatedLines: TranslatedLine[] | null
+  translationsLoading?: boolean
   progressMs: number
   autoScroll: boolean
   onSelectPhrase?: (text: string, lineIndex: number) => void
@@ -17,6 +18,7 @@ export default function LyricsDisplay({
   lines,
   synced,
   translatedLines,
+  translationsLoading,
   progressMs,
   autoScroll,
   onSelectPhrase,
@@ -45,18 +47,25 @@ export default function LyricsDisplay({
 
   return (
     <div>
-      {/* Controls — only shown when translations are available */}
-      {translatedLines && (
+      {/* Controls */}
+      {(translatedLines || translationsLoading) && (
         <div className="mb-4 flex items-center justify-end gap-3">
-          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none dark:text-gray-400">
-            <input
-              type="checkbox"
-              checked={showTranslation}
-              onChange={(e) => setShowTranslation(e.target.checked)}
-              className="rounded"
-            />
-            Show translations
-          </label>
+          {translationsLoading && (
+            <span className="text-xs text-gray-400 dark:text-gray-500 animate-pulse">
+              Generating furigana…
+            </span>
+          )}
+          {translatedLines && (
+            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none dark:text-gray-400">
+              <input
+                type="checkbox"
+                checked={showTranslation}
+                onChange={(e) => setShowTranslation(e.target.checked)}
+                className="rounded"
+              />
+              Show translations
+            </label>
+          )}
         </div>
       )}
 

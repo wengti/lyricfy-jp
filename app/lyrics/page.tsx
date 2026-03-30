@@ -146,19 +146,13 @@ export default function LyricsPage() {
         </div>
       )}
 
-      {/* Furigana loading */}
-      {activeLyricsResult?.isJapanese && furiganaLoading && (
-        <div className="py-8 text-center text-sm text-gray-400 dark:text-gray-500">
-          Generating furigana annotations…
-        </div>
-      )}
-
       {/* Main lyrics display */}
-      {activeLyricsResult && activeLyricsResult.lines.length > 0 && (!activeLyricsResult.isJapanese || !furiganaLoading) && (
+      {activeLyricsResult && activeLyricsResult.lines.length > 0 && (
         <LyricsDisplay
           lines={activeLyricsResult.lines}
           synced={activeLyricsResult.synced}
           translatedLines={activeLyricsResult.isJapanese ? translatedLines : null}
+          translationsLoading={activeLyricsResult.isJapanese && furiganaLoading}
           progressMs={progressMs}
           autoScroll={autoScroll}
           onSelectPhrase={activeLyricsResult.isJapanese ? (phrase) => setSelectedPhrase(phrase) : undefined}
