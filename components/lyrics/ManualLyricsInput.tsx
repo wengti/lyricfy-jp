@@ -1,0 +1,48 @@
+'use client'
+
+import { useState } from 'react'
+import { FileText } from 'lucide-react'
+import type { LrcLine } from '@/types/ai'
+import { plainLinesToLrc } from '@/lib/utils/lrc-parser'
+
+interface Props {
+  onSubmit: (lines: LrcLine[]) => void
+}
+
+export default function ManualLyricsInput({ onSubmit }: Props) {
+  const [text, setText] = useState('')
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const rawLines = text.split('\n')
+    const lines = plainLinesToLrc(rawLines)
+    if (lines.length > 0) {
+      onSubmit(lines)
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-6">
+      <div className="mb-3 flex items-center gap-2 text-gray-500">
+        <FileText size={18} />
+        <p className="text-sm font-medium">Lyrics not found — paste them manually</p>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={10}
+          placeholder="Paste Japanese lyrics here, one line per row…"
+          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+        />
+        <button
+          type="submit"
+          disabled={!text.trim()}
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+        >
+          Annotate with furigana
+        </button>
+      </form>
+    </div>
+  )
+}

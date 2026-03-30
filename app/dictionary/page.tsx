@@ -1,0 +1,158 @@
+'use client'
+
+import { useState } from 'react'
+import { Plus, Search, BookOpen } from 'lucide-react'
+import { useDictionary } from '@/hooks/useDictionary'
+import DictionaryEntryRow from '@/components/dictionary/DictionaryEntry'
+import AddWordModal from '@/components/dictionary/AddWordModal'
+import EditWordModal from '@/components/dictionary/EditWordModal'
+import type { DictionaryEntry, DictionarySortOption } from '@/types/database'
+
+export default function DictionaryPage() {
+  const [sort, setSort] = useState<DictionarySortOption>('created_at_desc')
+  const [search, setSearch] = useState('')
+  const [tagFilter, setTagFilter] = useState('')
+  const [showAdd, setShowAdd] = useState(false)
+  const [editEntry, setEditEntry] = useState<DictionaryEntry | null>(null)
+
+  const { entries, loading, error, addEntry, updateEntry, deleteEntry } = useDictionary({
+    sort,
+    search,
+    tag: tagFilter,
+  })
+
+  // Collect all unique tags from current entries for the filter dropdown
+  const allTags = Array.from(new Set(entries.flatMap((e) => e.tags))).sort()
+
+  async function handleDelete(id: string) {
+    if (!confirm('Delete this word from your dictionary?')) return
+    await deleteEntry(id)
+  }
+
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-8">
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <BookOpen size={22} className="text-indigo-600" />
+          <h1 className="text-xl font-bold text-gray-900">Dictionary</h1>
+          {!loading && (
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
+              {entries.length}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={() => setShowAdd(true)}
+          className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+        >
+          <Plus size={16} />
+          Add word
+        </button>
+      </div>
+
+      {/* Filters */}
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-48">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search words…"
+            className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+          />
+        </div>
+
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as DictionarySortOption)}
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+        >
+          <option value="created_at_desc">Newest first</option>
+          <option value="created_at_asc">Oldest first</option>
+          <option value="japanese_asc">Japanese A→Z</option>
+          <option value="english_asc">English A→Z</option>
+        </select>
+
+        {allTags.length > 0 && (
+          <select
+            value={tagFilter}
+            onChange={(e) => setTagFilter(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+          >
+            <option value="">All tags</option>
+            {allTags.map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+      )}
+
+      {/* Table */}
+      {loading ? (
+        <div className="py-16 text-center text-sm text-gray-400">Loading…</div>
+      ) : entries.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center">
+          <BookOpen size={32} className="mx-auto mb-3 text-gray-300" />
+          <p className="text-sm text-gray-500">
+            {search || tagFilter ? 'No words match your filters.' : 'Your dictionary is empty.'}
+          </p>
+          {!search && !tagFilter && (
+            <button
+              onClick={() => setShowAdd(true)}
+              className="mt-3 text-sm font-medium text-indigo-600 hover:underline"
+            >
+              Add your first word
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+          <table className="w-full text-left">
+            <thead className="border-b border-gray-100 bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+              <tr>
+                <th className="px-4 py-3">Japanese</th>
+                <th className="px-4 py-3">English</th>
+                <th className="px-4 py-3">Example</th>
+                <th className="px-4 py-3">Source / Tags</th>
+                <th className="px-4 py-3" />
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map((entry) => (
+                <DictionaryEntryRow
+                  key={entry.id}
+                  entry={entry}
+                  onEdit={setEditEntry}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Modals */}
+      {showAdd && (
+        <AddWordModal
+          onClose={() => setShowAdd(false)}
+          onSave={addEntry}
+        />
+      )}
+      {editEntry && (
+        <EditWordModal
+          entry={editEntry}
+          onClose={() => setEditEntry(null)}
+          onSave={updateEntry}
+        />
+      )}
+    </div>
+  )
+}

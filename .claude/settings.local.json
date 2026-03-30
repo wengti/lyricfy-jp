@@ -1,0 +1,49 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:supabase.com)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(node -e \"const fs=require\\(''fs''\\);const s=JSON.parse\\(fs.readFileSync\\(''c:/Users/User/Journey/dev/lyricfy-jp/.claude/settings.local.json'',''utf8''\\)\\);console.log\\(''PostToolUse hook command:'',s.hooks.PostToolUse[0].hooks[0].command\\);console.log\\(''PreToolUse hook command:'',s.hooks.PreToolUse[0].hooks[0].command\\);console.log\\(''JSON valid: OK''\\);\")",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npx create-next-app@15 . --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Read(//c/Users/User/Journey/dev/**)",
+      "Bash(npx create-next-app@15 lyricfy-jp-scaffold --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(cp -r lyricfy-jp-scaffold/. lyricfy-jp/)",
+      "Bash(rm -rf lyricfy-jp-scaffold)",
+      "Bash(cp -r c:/Users/User/Journey/dev/lyricfy-jp-scaffold/app c:/Users/User/Journey/dev/lyricfy-jp/)",
+      "Bash(cp c:/Users/User/Journey/dev/lyricfy-jp-scaffold/.gitignore c:/Users/User/Journey/dev/lyricfy-jp/)",
+      "Bash(rm -rf c:/Users/User/Journey/dev/lyricfy-jp-scaffold)",
+      "Bash(find c:/Users/User/Journey/dev/lyricfy-jp -maxdepth 3 -not -path */node_modules/* -not -path */.git/*)",
+      "Bash(npm pkg:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"c:/Users/User/Journey/dev/lyricfy-jp/.claude/hooks/api-key-reminder.js\"",
+            "statusMessage": "Checking API key usage..."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"c:/Users/User/Journey/dev/lyricfy-jp/.claude/hooks/tsc-before-commit.js\"",
+            "statusMessage": "Running TypeScript check..."
+          }
+        ]
+      }
+    ]
+  }
+}
