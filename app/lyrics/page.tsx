@@ -36,10 +36,12 @@ export default function LyricsPage() {
 
   const rawLines = useMemo(
     () => activeLyricsResult?.isJapanese ? activeLyricsResult.lines.map((l) => l.text) : null,
-    // Depend on track id + manual lines identity so this only recomputes when the song or manual input changes,
-    // not on every progress-tick re-render.
+    // Depend on lyricsResult (stable state ref) and manualLines so rawLines is only
+    // recomputed when actual lyrics data changes, not on every progress-tick re-render.
+    // Using track?.id was wrong — it changed before lyricsResult cleared, causing
+    // the memo to return the previous song's lines under the new track metadata.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [track?.id, manualLines]
+    [lyricsResult, manualLines]
   )
 
   const { translatedLines, loading: furiganaLoading, error: furiganaError } = useFurigana(rawLines, track?.name ?? null, track?.artist ?? null)

@@ -30,6 +30,7 @@ export function useLyrics(track: string | null, artist: string | null) {
 
     setLoading(true)
     setError(null)
+    setResult(null)
 
     const params = new URLSearchParams({ track, artist })
     fetch(`/api/lyrics?${params}`)
