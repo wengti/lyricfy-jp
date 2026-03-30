@@ -39,7 +39,7 @@ export async function openRouterChat(options: OpenRouterOptions): Promise<string
 
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 90_000)
+    const timeout = setTimeout(() => controller.abort(), 60_000)
 
     let res: Response
     try {
