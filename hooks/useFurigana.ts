@@ -17,7 +17,7 @@ export function useFurigana(lines: string[] | null, track: string | null, artist
       return
     }
 
-    const key = `${track ?? ''}::${artist ?? ''}::${lines.join('||')}`
+    const key = `${track ?? ''}::${artist ?? ''}`
     if (key === lastKey.current) return
     lastKey.current = key
 
@@ -30,32 +30,33 @@ export function useFurigana(lines: string[] | null, track: string | null, artist
     setError(null)
     setTranslatedLines(null)
 
-    const controller = new AbortController()
+    // Stale flag — if the song changes before this fetch completes, discard the result
+    let stale = false
 
     fetch('/api/ai/furigana', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ lines, track, artist }),
-      signal: controller.signal,
     })
       .then((res) => {
         if (!res.ok) return res.json().then((d) => { throw new Error(d.error ?? 'Furigana request failed') })
         return res.json().then((d) => d.lines as TranslatedLine[])
       })
       .then((result) => {
+        if (stale) return
         cache.current.set(key, result)
         setTranslatedLines(result)
       })
       .catch((e) => {
-        if (e instanceof Error && e.name === 'AbortError') return
+        if (stale) return
         setError(e instanceof Error ? e.message : 'Unknown error')
       })
-      .finally(() => setLoading(false))
+      .finally(() => {
+        if (!stale) setLoading(false)
+      })
 
     return () => {
-      controller.abort()
-      // Reset lastKey so that if this effect re-runs (e.g. React Strict Mode double-invoke
-      // or song change) the same key is allowed to trigger a fresh fetch.
+      stale = true
       lastKey.current = null
     }
   }, [lines, track, artist])
