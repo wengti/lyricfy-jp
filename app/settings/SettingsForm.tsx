@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, CheckCircle2, Copy } from 'lucide-react'
+import { Loader2, CheckCircle2 } from 'lucide-react'
 import ConfidentialityBanner from '@/components/settings/ConfidentialityBanner'
 import ApiKeyInput from '@/components/settings/ApiKeyInput'
 import TutorialAccordion from '@/components/settings/TutorialAccordion'
@@ -15,18 +15,6 @@ const OPENROUTER_STEPS = [
   { heading: 'Paste the key into the field below and click Save.', body: null },
 ]
 
-const SPOTIFY_STEPS = [
-  { heading: 'Go to developer.spotify.com/dashboard and log in with your Spotify account.', body: null },
-  { heading: 'Click Create app. Enter any name and description.', body: null },
-  {
-    heading: 'In the Redirect URIs field, enter the callback URL shown in the box below.',
-    body: 'This must match exactly — no trailing slash.',
-  },
-  { heading: 'Accept the terms and click Save.', body: null },
-  { heading: "On your new app's page, click Settings.", body: null },
-  { heading: 'Copy the Client ID (visible) and click View client secret to get the secret. Paste both below.', body: null },
-]
-
 const GENIUS_STEPS = [
   { heading: 'Go to genius.com/api-clients and sign in or create a free account.', body: null },
   { heading: 'Click New API Client. Fill in any app name and homepage URL.', body: null },
@@ -38,18 +26,13 @@ interface Props {
   appUrl: string
 }
 
-export default function SettingsForm({ savedKeys, appUrl }: Props) {
-  const callbackUrl = `${appUrl}/api/spotify/callback`
-
+export default function SettingsForm({ savedKeys }: Props) {
   const [form, setForm] = useState({
     openrouter_api_key: '',
-    spotify_client_id: '',
-    spotify_client_secret: '',
     genius_access_token: '',
   })
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
 
   function setField(field: keyof typeof form, value: string) {
     setForm((f) => ({ ...f, [field]: value }))
@@ -72,18 +55,12 @@ export default function SettingsForm({ savedKeys, appUrl }: Props) {
       }
       setStatus('success')
       // Clear form fields after save — saved values are shown via placeholder
-      setForm({ openrouter_api_key: '', spotify_client_id: '', spotify_client_secret: '', genius_access_token: '' })
+      setForm({ openrouter_api_key: '', genius_access_token: '' })
       setTimeout(() => setStatus('idle'), 3000)
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : 'Save failed')
       setStatus('error')
     }
-  }
-
-  async function copyCallbackUrl() {
-    await navigator.clipboard.writeText(callbackUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }
 
   const updatedAt = savedKeys?.updated_at
@@ -112,55 +89,6 @@ export default function SettingsForm({ savedKeys, appUrl }: Props) {
           onChange={(v) => setField('openrouter_api_key', v)}
           placeholder="sk-or-v1-..."
         />
-      </section>
-
-      {/* Spotify */}
-      <section>
-        <h2 className="mb-1 text-base font-semibold text-gray-900">Spotify</h2>
-        <p className="mb-4 text-sm text-gray-500">
-          Used to detect which song you&apos;re currently listening to and sync lyrics in real time.
-          You need to register your own Spotify app (free).
-        </p>
-        <TutorialAccordion service="Spotify" steps={SPOTIFY_STEPS} />
-
-        {/* Redirect URI info box */}
-        <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-          <p className="mb-2 text-xs font-medium text-gray-600">
-            Set this as the Redirect URI in your Spotify app dashboard:
-          </p>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-800 break-all">
-              {callbackUrl}
-            </code>
-            <button
-              type="button"
-              onClick={copyCallbackUrl}
-              className="flex shrink-0 items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-600 hover:bg-gray-100"
-            >
-              <Copy size={13} />
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <ApiKeyInput
-            id="spotify_client_id"
-            label="Client ID"
-            value={form.spotify_client_id}
-            savedValue={savedKeys?.spotify_client_id ?? null}
-            onChange={(v) => setField('spotify_client_id', v)}
-            placeholder="Your Spotify Client ID"
-          />
-          <ApiKeyInput
-            id="spotify_client_secret"
-            label="Client Secret"
-            value={form.spotify_client_secret}
-            savedValue={savedKeys?.spotify_client_secret ?? null}
-            onChange={(v) => setField('spotify_client_secret', v)}
-            placeholder="Your Spotify Client Secret"
-          />
-        </div>
       </section>
 
       {/* Genius */}

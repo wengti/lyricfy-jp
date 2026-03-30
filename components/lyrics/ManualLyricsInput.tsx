@@ -22,8 +22,8 @@ export default function ManualLyricsInput({ onSubmit }: Props) {
   }
 
   return (
-    <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-6">
-      <div className="mb-3 flex items-center gap-2 text-gray-500">
+    <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+      <div className="mb-3 flex items-center gap-2 text-gray-500 dark:text-gray-400">
         <FileText size={18} />
         <p className="text-sm font-medium">Lyrics not found — paste them manually</p>
       </div>
@@ -33,7 +33,7 @@ export default function ManualLyricsInput({ onSubmit }: Props) {
           onChange={(e) => setText(e.target.value)}
           rows={10}
           placeholder="Paste Japanese lyrics here, one line per row…"
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:ring-indigo-800"
         />
         <button
           type="submit"

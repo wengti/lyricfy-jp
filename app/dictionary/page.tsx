@@ -34,10 +34,10 @@ export default function DictionaryPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BookOpen size={22} className="text-indigo-600" />
-          <h1 className="text-xl font-bold text-gray-900">Dictionary</h1>
+          <BookOpen size={22} className="text-indigo-600 dark:text-indigo-400" />
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Dictionary</h1>
           {!loading && (
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
               {entries.length}
             </span>
           )}
@@ -54,19 +54,19 @@ export default function DictionaryPage() {
       {/* Filters */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-48">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search words…"
-            className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+            className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:ring-indigo-800"
           />
         </div>
 
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as DictionarySortOption)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
         >
           <option value="created_at_desc">Newest first</option>
           <option value="created_at_asc">Oldest first</option>
@@ -78,7 +78,7 @@ export default function DictionaryPage() {
           <select
             value={tagFilter}
             onChange={(e) => setTagFilter(e.target.value)}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
           >
             <option value="">All tags</option>
             {allTags.map((tag) => (
@@ -92,31 +92,31 @@ export default function DictionaryPage() {
 
       {/* Error */}
       {error && (
-        <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">{error}</div>
       )}
 
       {/* Table */}
       {loading ? (
-        <div className="py-16 text-center text-sm text-gray-400">Loading…</div>
+        <div className="py-16 text-center text-sm text-gray-400 dark:text-gray-500">Loading…</div>
       ) : entries.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center">
-          <BookOpen size={32} className="mx-auto mb-3 text-gray-300" />
-          <p className="text-sm text-gray-500">
+        <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center dark:border-gray-700">
+          <BookOpen size={32} className="mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {search || tagFilter ? 'No words match your filters.' : 'Your dictionary is empty.'}
           </p>
           {!search && !tagFilter && (
             <button
               onClick={() => setShowAdd(true)}
-              className="mt-3 text-sm font-medium text-indigo-600 hover:underline"
+              className="mt-3 text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
             >
               Add your first word
             </button>
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
           <table className="w-full text-left">
-            <thead className="border-b border-gray-100 bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+            <thead className="border-b border-gray-100 bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-400">
               <tr>
                 <th className="px-4 py-3">Japanese</th>
                 <th className="px-4 py-3">English</th>

@@ -105,3 +105,16 @@ create trigger trg_user_api_keys_upd
 -- Anon role cannot access API keys under any circumstances
 revoke all on public.user_api_keys from anon;
 grant select, insert, update, delete on public.user_api_keys to authenticated;
+
+-- ============================================================
+-- lyrics_cache
+-- Shared cache of AI-generated furigana + translations.
+-- Keyed by track + artist. Written via service role (admin).
+-- ============================================================
+create table public.lyrics_cache (
+  track_name       text not null,
+  artist           text not null,
+  translated_lines jsonb not null,
+  created_at       timestamptz not null default now(),
+  primary key (track_name, artist)
+);

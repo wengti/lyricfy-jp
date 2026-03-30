@@ -1,13 +1,14 @@
 const SPOTIFY_AUTH_BASE = 'https://accounts.spotify.com'
 const SCOPES = ['user-read-currently-playing', 'user-read-playback-state'].join(' ')
 
-export function buildSpotifyAuthUrl(clientId: string, redirectUri: string): string {
+export function buildSpotifyAuthUrl(clientId: string, redirectUri: string, state?: string): string {
   const params = new URLSearchParams({
     client_id: clientId,
     response_type: 'code',
     redirect_uri: redirectUri,
     scope: SCOPES,
     show_dialog: 'false',
+    ...(state ? { state } : {}),
   })
   return `${SPOTIFY_AUTH_BASE}/authorize?${params}`
 }

@@ -2,8 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 
 export type UserApiKeys = {
   openrouter_api_key: string | null
-  spotify_client_id: string | null
-  spotify_client_secret: string | null
   genius_access_token: string | null
 }
 
@@ -23,9 +21,7 @@ export async function getUserApiKeys(): Promise<UserApiKeys | null> {
 
   const { data, error } = await supabase
     .from('user_api_keys')
-    .select(
-      'openrouter_api_key, spotify_client_id, spotify_client_secret, genius_access_token'
-    )
+    .select('openrouter_api_key, genius_access_token')
     .eq('user_id', user.id)
     .maybeSingle()
 

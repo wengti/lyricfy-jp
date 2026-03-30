@@ -76,23 +76,23 @@ export default function SaveToDictionaryModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <h2 className="font-semibold text-gray-900">Save to Dictionary</h2>
-          <button onClick={onClose} className="rounded p-1 text-gray-400 hover:text-gray-700">
+      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl dark:bg-gray-900">
+        <div className="flex items-center justify-between border-b px-6 py-4 dark:border-gray-700">
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100">Save to Dictionary</h2>
+          <button onClick={onClose} className="rounded p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSave} className="space-y-4 px-6 py-5">
           {error && (
-            <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+            <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">{error}</div>
           )}
 
           {/* Selected phrase */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">Phrase</label>
-            <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800">
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Phrase</label>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
               {phrase}
             </div>
           </div>
@@ -103,7 +103,7 @@ export default function SaveToDictionaryModal({
               type="button"
               onClick={handleEnrich}
               disabled={enriching}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-60 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50"
             >
               {enriching && <Loader2 size={14} className="animate-spin" />}
               {enriching ? 'Looking up…' : 'Auto-fill with AI'}
@@ -111,37 +111,37 @@ export default function SaveToDictionaryModal({
           )}
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Hiragana <span className="text-red-500">*</span>
             </label>
             <input
               required
               value={hiragana}
               onChange={(e) => setHiragana(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-indigo-800"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
               English <span className="text-red-500">*</span>
             </label>
             <input
               required
               value={english}
               onChange={(e) => setEnglish(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-indigo-800"
             />
           </div>
 
           {sourceSong && (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-400 dark:text-gray-500">
               From: <em>{sourceSong}</em>
               {sourceArtist && ` — ${sourceArtist}`}
             </p>
           )}
 
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-gray-100">
+            <button type="button" onClick={onClose} className="rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800">
               Cancel
             </button>
             <button

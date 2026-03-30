@@ -9,6 +9,7 @@ interface Props {
   synced: boolean
   translatedLines: TranslatedLine[] | null
   progressMs: number
+  autoScroll: boolean
   onSelectPhrase?: (text: string, lineIndex: number) => void
 }
 
@@ -17,6 +18,7 @@ export default function LyricsDisplay({
   synced,
   translatedLines,
   progressMs,
+  autoScroll,
   onSelectPhrase,
 }: Props) {
   const [showTranslation, setShowTranslation] = useState(true)
@@ -45,7 +47,7 @@ export default function LyricsDisplay({
     <div>
       {/* Controls */}
       <div className="mb-4 flex items-center justify-end gap-3">
-        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none dark:text-gray-400">
           <input
             type="checkbox"
             checked={showTranslation}
@@ -65,6 +67,7 @@ export default function LyricsDisplay({
             rawText={line.text}
             isActive={synced ? i === activeIndex : false}
             showTranslation={showTranslation}
+            autoScroll={autoScroll}
           />
         ))}
       </div>

@@ -16,7 +16,6 @@ Respond with ONLY valid JSON, no explanation.`
     apiKey,
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.1,
-    jsonMode: true,
   })
 
   const parsed = JSON.parse(content) as EnrichedWord

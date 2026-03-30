@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { refreshAccessToken } from './auth'
-import { getUserApiKeys } from '@/lib/getUserApiKeys'
 import type { NowPlayingResponse } from '@/types/spotify'
 
 const FIVE_MIN_MS = 5 * 60 * 1000
@@ -26,13 +25,14 @@ export async function getValidAccessToken(userId: string): Promise<string | null
   if (!needsRefresh) return tokenRow.access_token
 
   // Refresh the token
-  const keys = await getUserApiKeys()
-  if (!keys?.spotify_client_id || !keys?.spotify_client_secret) return null
+  const clientId = process.env.SPOTIFY_CLIENT_ID
+  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET
+  if (!clientId || !clientSecret) return null
 
   const refreshed = await refreshAccessToken(
     tokenRow.refresh_token,
-    keys.spotify_client_id,
-    keys.spotify_client_secret
+    clientId,
+    clientSecret
   )
 
   const newExpiresAt = new Date(Date.now() + refreshed.expires_in * 1000).toISOString()

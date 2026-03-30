@@ -10,6 +10,8 @@ interface Props {
   onSave: (id: string, updates: DictionaryEntryUpdate) => Promise<unknown>
 }
 
+const inputCls = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-indigo-800'
+
 export default function EditWordModal({ entry, onClose, onSave }: Props) {
   const [form, setForm] = useState<DictionaryEntryUpdate>({
     japanese_text: entry.japanese_text,
@@ -55,85 +57,85 @@ export default function EditWordModal({ entry, onClose, onSave }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <h2 className="font-semibold text-gray-900">Edit word</h2>
-          <button onClick={onClose} className="rounded p-1 text-gray-400 hover:text-gray-700">
+      <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl dark:bg-gray-900">
+        <div className="flex items-center justify-between border-b px-6 py-4 dark:border-gray-700">
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100">Edit word</h2>
+          <button onClick={onClose} className="rounded p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
           {error && (
-            <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+            <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">{error}</div>
           )}
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">Japanese *</label>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Japanese *</label>
             <input
               required
               value={form.japanese_text ?? ''}
               onChange={(e) => set('japanese_text', e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+              className={inputCls}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">Hiragana *</label>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Hiragana *</label>
               <input
                 required
                 value={form.hiragana ?? ''}
                 onChange={(e) => set('hiragana', e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className={inputCls}
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">English *</label>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">English *</label>
               <input
                 required
                 value={form.english_translation ?? ''}
                 onChange={(e) => set('english_translation', e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className={inputCls}
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">Example (JP)</label>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Example (JP)</label>
             <input
               value={form.example_japanese ?? ''}
               onChange={(e) => set('example_japanese', e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+              className={inputCls}
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">Example (EN)</label>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Example (EN)</label>
             <input
               value={form.example_english ?? ''}
               onChange={(e) => set('example_english', e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+              className={inputCls}
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">Tags</label>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Tags</label>
             <div className="flex gap-2">
               <input
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag() } }}
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className={`flex-1 ${inputCls}`}
                 placeholder="Press Enter to add tag"
               />
-              <button type="button" onClick={addTag} className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">Add</button>
+              <button type="button" onClick={addTag} className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800">Add</button>
             </div>
             {(form.tags ?? []).length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {(form.tags ?? []).map((tag) => (
-                  <span key={tag} className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                  <span key={tag} className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
                     {tag}
-                    <button type="button" onClick={() => removeTag(tag)} className="ml-0.5 rounded-full hover:text-indigo-900">×</button>
+                    <button type="button" onClick={() => removeTag(tag)} className="ml-0.5 rounded-full hover:text-indigo-900 dark:hover:text-indigo-200">×</button>
                   </span>
                 ))}
               </div>
@@ -141,7 +143,7 @@ export default function EditWordModal({ entry, onClose, onSave }: Props) {
           </div>
 
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-gray-100">Cancel</button>
+            <button type="button" onClick={onClose} className="rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800">Cancel</button>
             <button type="submit" disabled={saving} className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60">
               {saving && <Loader2 size={14} className="animate-spin" />}
               Save changes

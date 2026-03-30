@@ -22,6 +22,8 @@ const EMPTY: DictionaryEntryInsert = {
   tags: [],
 }
 
+const inputCls = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:ring-indigo-800'
+
 export default function AddWordModal({ onClose, onSave, prefill }: Props) {
   const [form, setForm] = useState<DictionaryEntryInsert>({ ...EMPTY, ...prefill })
   const [tagInput, setTagInput] = useState('')
@@ -90,23 +92,23 @@ export default function AddWordModal({ onClose, onSave, prefill }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl">
+      <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl dark:bg-gray-900">
         {/* Header */}
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <h2 className="font-semibold text-gray-900">Add word</h2>
-          <button onClick={onClose} className="rounded p-1 text-gray-400 hover:text-gray-700">
+        <div className="flex items-center justify-between border-b px-6 py-4 dark:border-gray-700">
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100">Add word</h2>
+          <button onClick={onClose} className="rounded p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
           {error && (
-            <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+            <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">{error}</div>
           )}
 
           {/* Japanese + Enrich button */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Japanese word / phrase <span className="text-red-500">*</span>
             </label>
             <div className="flex gap-2">
@@ -115,14 +117,14 @@ export default function AddWordModal({ onClose, onSave, prefill }: Props) {
                 value={form.japanese_text}
                 onChange={(e) => set('japanese_text', e.target.value)}
                 onBlur={handleEnrich}
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className={`flex-1 ${inputCls}`}
                 placeholder="例：桜"
               />
               <button
                 type="button"
                 onClick={handleEnrich}
                 disabled={enriching || !form.japanese_text}
-                className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-600 transition hover:bg-gray-50 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-600 transition hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800"
               >
                 {enriching ? <Loader2 size={14} className="animate-spin" /> : null}
                 {enriching ? 'Enriching…' : 'AI enrich'}
@@ -132,57 +134,57 @@ export default function AddWordModal({ onClose, onSave, prefill }: Props) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Hiragana <span className="text-red-500">*</span>
               </label>
               <input
                 required
                 value={form.hiragana}
                 onChange={(e) => set('hiragana', e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className={inputCls}
                 placeholder="さくら"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 English <span className="text-red-500">*</span>
               </label>
               <input
                 required
                 value={form.english_translation}
                 onChange={(e) => set('english_translation', e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className={inputCls}
                 placeholder="cherry blossom"
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Example sentence (JP)
             </label>
             <input
               value={form.example_japanese ?? ''}
               onChange={(e) => set('example_japanese', e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+              className={inputCls}
               placeholder="桜が咲いている。"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Example sentence (EN)
             </label>
             <input
               value={form.example_english ?? ''}
               onChange={(e) => set('example_english', e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+              className={inputCls}
               placeholder="The cherry blossoms are blooming."
             />
           </div>
 
           {/* Tags */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">Tags</label>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Tags</label>
             <div className="flex gap-2">
               <input
                 value={tagInput}
@@ -193,13 +195,13 @@ export default function AddWordModal({ onClose, onSave, prefill }: Props) {
                     addTag()
                   }
                 }}
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className={`flex-1 ${inputCls}`}
                 placeholder="Press Enter to add tag"
               />
               <button
                 type="button"
                 onClick={addTag}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800"
               >
                 Add
               </button>
@@ -209,13 +211,13 @@ export default function AddWordModal({ onClose, onSave, prefill }: Props) {
                 {(form.tags ?? []).map((tag) => (
                   <span
                     key={tag}
-                    className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600"
+                    className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400"
                   >
                     {tag}
                     <button
                       type="button"
                       onClick={() => removeTag(tag)}
-                      className="ml-0.5 rounded-full hover:text-indigo-900"
+                      className="ml-0.5 rounded-full hover:text-indigo-900 dark:hover:text-indigo-200"
                     >
                       ×
                     </button>
@@ -230,7 +232,7 @@ export default function AddWordModal({ onClose, onSave, prefill }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-gray-100"
+              className="rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
             >
               Cancel
             </button>

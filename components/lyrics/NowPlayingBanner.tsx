@@ -12,7 +12,7 @@ export default function NowPlayingBanner({ playing }: Props) {
   const progressPct = Math.min((progressMs / track.durationMs) * 100, 100)
 
   return (
-    <div className="mb-6 flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+    <div className="mb-6 flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
       {track.albumArt && (
         <Image
           src={track.albumArt}
@@ -38,12 +38,13 @@ export default function NowPlayingBanner({ playing }: Props) {
               ))}
             </span>
           )}
-          <p className="truncate font-semibold text-gray-900">{track.name}</p>
+          <p className="truncate font-semibold text-gray-900 dark:text-gray-100">{track.name}</p>
         </div>
-        <p className="truncate text-sm text-gray-500">{track.artist}</p>
-        {/* Progress bar */}
-        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-gray-100">
+        <p className="truncate text-sm text-gray-500 dark:text-gray-400">{track.artist}</p>
+        {/* Progress bar — keyed by track.id so it remounts instantly on song change */}
+        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
           <div
+            key={track.id}
             className="h-full rounded-full bg-indigo-400 transition-all duration-1000"
             style={{ width: `${progressPct}%` }}
           />

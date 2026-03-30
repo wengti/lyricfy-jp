@@ -1,14 +1,22 @@
 @import "tailwindcss";
 
+/* Class-based dark mode for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Ruby annotation styling */
 ruby {
   ruby-align: center;
 }
 
 rt {
-  font-size: 0.55em;
+  font-size: 0.7em;
   color: #9ca3af;
-  line-height: 1;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+.dark rt {
+  color: #6b7280;
 }
 
 /* Karaoke bounce animation for NowPlayingBanner */

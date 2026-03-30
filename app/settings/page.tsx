@@ -12,15 +12,13 @@ export default async function SettingsPage() {
 
   const { data } = await supabase
     .from('user_api_keys')
-    .select('openrouter_api_key, spotify_client_id, spotify_client_secret, genius_access_token, updated_at')
+    .select('openrouter_api_key, genius_access_token, updated_at')
     .eq('user_id', user.id)
     .maybeSingle()
 
   const savedKeys = data
     ? {
         openrouter_api_key: maskKey(data.openrouter_api_key),
-        spotify_client_id: maskKey(data.spotify_client_id),
-        spotify_client_secret: maskKey(data.spotify_client_secret),
         genius_access_token: maskKey(data.genius_access_token),
         updated_at: data.updated_at,
       }

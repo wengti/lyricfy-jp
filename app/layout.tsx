@@ -3,6 +3,7 @@ import { Geist } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/layout/Navbar'
 import { createClient } from '@/lib/supabase/server'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 
 const geist = Geist({ subsets: ['latin'] })
 
@@ -23,10 +24,19 @@ export default async function RootLayout({
   } = await supabase.auth.getUser()
 
   return (
-    <html lang="en">
-      <body className={`${geist.className} min-h-screen bg-gray-50 antialiased`}>
-        {user && <Navbar />}
-        <main>{children}</main>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}})()`,
+          }}
+        />
+      </head>
+      <body className={`${geist.className} min-h-screen bg-gray-50 dark:bg-gray-950 antialiased`}>
+        <ThemeProvider>
+          {user && <Navbar />}
+          <main>{children}</main>
+        </ThemeProvider>
       </body>
     </html>
   )

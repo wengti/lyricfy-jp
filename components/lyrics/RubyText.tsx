@@ -12,7 +12,7 @@ export default function RubyText({ tokens }: Props) {
           <ruby key={i} className="ruby-token">
             {token.original}
             <rp>(</rp>
-            <rt className="text-[0.55em] text-gray-400">{token.reading}</rt>
+            <rt className="text-gray-400">{token.reading}</rt>
             <rp>)</rp>
           </ruby>
         ) : (
