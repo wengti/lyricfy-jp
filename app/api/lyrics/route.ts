@@ -21,6 +21,7 @@ export async function GET(request: Request) {
 
   // 1. Try lrclib.net (free, no key required)
   let result = await getLyricsFromLrclib(track, artist)
+  let source: LyricsResult['source'] = result ? 'lrclib' : null
 
   // 2. Genius fallback
   if (!result) {
@@ -31,6 +32,7 @@ export async function GET(request: Request) {
         const lines = await scrapeGeniusLyrics(song.url)
         if (lines && lines.length > 0) {
           result = { lines, synced: false }
+          source = 'genius'
         }
       }
     }
@@ -44,6 +46,7 @@ export async function GET(request: Request) {
       notFound: true,
       isJapanese: false,
       wasRomaji: false,
+      source: null,
     }
     return NextResponse.json(response)
   }
@@ -58,6 +61,7 @@ export async function GET(request: Request) {
     notFound: false,
     isJapanese: script === 'japanese',
     wasRomaji: false,
+    source,
   }
 
   return NextResponse.json(response)

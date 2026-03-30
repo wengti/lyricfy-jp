@@ -7,6 +7,7 @@ import type { LrcLine, TranslatedLine } from '@/types/ai'
 interface Props {
   lines: LrcLine[]
   synced: boolean
+  source: 'lrclib' | 'genius' | 'manual' | null
   translatedLines: TranslatedLine[] | null
   translationsLoading?: boolean
   progressMs: number
@@ -14,9 +15,16 @@ interface Props {
   onSelectPhrase?: (text: string, lineIndex: number) => void
 }
 
+const SOURCE_BADGE: Record<string, { label: string; title: string; cls: string }> = {
+  lrclib:  { label: 'lrclib.net', title: 'Synced lyrics — karaoke active',    cls: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' },
+  genius:  { label: 'Genius',     title: 'Unsynced lyrics — no karaoke',       cls: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800' },
+  manual:  { label: 'Manual',     title: 'Manually pasted — no karaoke',       cls: 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700' },
+}
+
 export default function LyricsDisplay({
   lines,
   synced,
+  source,
   translatedLines,
   translationsLoading,
   progressMs,
@@ -48,8 +56,18 @@ export default function LyricsDisplay({
   return (
     <div>
       {/* Controls */}
-      {(translatedLines || translationsLoading) && (
-        <div className="mb-4 flex items-center justify-end gap-3">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        {/* Source badge */}
+        {source && SOURCE_BADGE[source] && (
+          <span
+            title={SOURCE_BADGE[source].title}
+            className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${SOURCE_BADGE[source].cls}`}
+          >
+            {SOURCE_BADGE[source].label} · {synced ? 'synced' : 'unsynced'}
+          </span>
+        )}
+
+        <div className="ml-auto flex items-center gap-3">
           {translationsLoading && (
             <span className="text-xs text-gray-400 dark:text-gray-500 animate-pulse">
               Generating furigana…
@@ -67,7 +85,7 @@ export default function LyricsDisplay({
             </label>
           )}
         </div>
-      )}
+      </div>
 
       {/* Lines */}
       <div className="space-y-1" onMouseUp={handleMouseUp}>

@@ -31,4 +31,5 @@ export interface LyricsResult {
   notFound: boolean  // true = both lrclib and Genius failed
   isJapanese: boolean
   wasRomaji: boolean // true = lyrics were romaji, converted by AI
+  source: 'lrclib' | 'genius' | 'manual' | null
 }

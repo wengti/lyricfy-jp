@@ -31,7 +31,7 @@ export default function LyricsPage() {
 
   // Use manual lines if provided, otherwise use fetched lines
   const activeLyricsResult = manualLines
-    ? { lines: manualLines, synced: false, notFound: false, isJapanese: true, wasRomaji: false }
+    ? { lines: manualLines, synced: false, notFound: false, isJapanese: true, wasRomaji: false, source: 'manual' as const }
     : lyricsResult
 
   const rawLines = activeLyricsResult?.isJapanese
@@ -151,6 +151,7 @@ export default function LyricsPage() {
         <LyricsDisplay
           lines={activeLyricsResult.lines}
           synced={activeLyricsResult.synced}
+          source={activeLyricsResult.source ?? null}
           translatedLines={activeLyricsResult.isJapanese ? translatedLines : null}
           translationsLoading={activeLyricsResult.isJapanese && furiganaLoading}
           progressMs={progressMs}
