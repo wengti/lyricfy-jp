@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+
+export const maxDuration = 120 // seconds — AI calls can be slow for long songs
 import { requireApiKey } from '@/lib/getUserApiKeys'
 import { generateFuriganaAndTranslations } from '@/lib/openrouter/furigana'
 import { getCachedTranslation, setCachedTranslation } from '@/lib/lyricsCache'
