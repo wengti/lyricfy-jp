@@ -21,6 +21,7 @@ export default function LyricsPage() {
 
   const { connected, playing, loading: spotifyLoading } = useNowPlaying()
   const [manualLines, setManualLines] = useState<LrcLine[] | null>(null)
+  const [furiganaBust, setFuriganaBust] = useState(0)
   const [showReplace, setShowReplace] = useState(false)
   const [selectedPhrase, setSelectedPhrase] = useState<string | null>(null)
   const [autoScroll, setAutoScroll] = useState(true)
@@ -46,7 +47,7 @@ export default function LyricsPage() {
     [lyricsResult, manualLines]
   )
 
-  const { translatedLines, loading: furiganaLoading, error: furiganaError } = useFurigana(rawLines, track?.name ?? null, track?.artist ?? null)
+  const { translatedLines, loading: furiganaLoading, error: furiganaError } = useFurigana(rawLines, track?.name ?? null, track?.artist ?? null, furiganaBust)
   const [toastDismissed, setToastDismissed] = useState(false)
 
   // Show toast again whenever a new error arrives
@@ -58,6 +59,7 @@ export default function LyricsPage() {
   // Reset manual lines and re-enable auto-scroll when track changes
   useEffect(() => {
     setManualLines(null)
+    setFuriganaBust(0)
     setShowReplace(false)
     setAutoScroll(true)
   }, [track?.id])
@@ -151,7 +153,7 @@ export default function LyricsPage() {
 
       {/* Lyrics not found */}
       {activeLyricsResult?.notFound && !manualLines && (
-        <ManualLyricsInput onSubmit={setManualLines} />
+        <ManualLyricsInput onSubmit={(lines) => { setManualLines(lines); setFuriganaBust((b) => b + 1) }} />
       )}
 
       {/* Replace lyrics — shown when lrclib found something but it may be wrong */}
@@ -169,7 +171,7 @@ export default function LyricsPage() {
         <div className="mb-6">
           <ManualLyricsInput
             heading="Paste the correct lyrics below"
-            onSubmit={(lines) => { setManualLines(lines); setShowReplace(false) }}
+            onSubmit={(lines) => { setManualLines(lines); setFuriganaBust((b) => b + 1); setShowReplace(false) }}
           />
           <button
             onClick={() => setShowReplace(false)}

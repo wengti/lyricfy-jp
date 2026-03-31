@@ -12,6 +12,7 @@ const schema = z.object({
   lines: z.array(z.string()).min(1),
   track: z.string().optional(),
   artist: z.string().optional(),
+  force: z.boolean().optional(), // bypass cache and overwrite with fresh result
 })
 
 export async function POST(request: Request) {
@@ -28,10 +29,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
   }
 
-  const { lines, track, artist } = parsed.data
+  const { lines, track, artist, force } = parsed.data
 
-  // Check Supabase cache first
-  if (track && artist) {
+  // Check Supabase cache first (skipped when force=true)
+  if (!force && track && artist) {
     const cached = await getCachedTranslation(track, artist)
     if (cached) {
       return NextResponse.json({ lines: cached })
