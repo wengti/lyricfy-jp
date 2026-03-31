@@ -15,6 +15,7 @@ export function useFurigana(
 
   const cache = useRef<Map<string, TranslatedLine[]>>(new Map())
   const lastKey = useRef<string | null>(null)
+  const prevTrackRef = useRef<{ track: string | null; artist: string | null }>({ track, artist })
 
   useEffect(() => {
     if (!lines || lines.length === 0) {
@@ -22,14 +23,21 @@ export function useFurigana(
       return
     }
 
-    const key = `${track ?? ''}::${artist ?? ''}::${bust}`
+    // If the track itself changed, treat bust as 0 — the component's reset effect
+    // fires after this effect, so bust may still hold the previous song's value.
+    const trackChanged =
+      prevTrackRef.current.track !== track || prevTrackRef.current.artist !== artist
+    prevTrackRef.current = { track, artist }
+    const effectiveBust = trackChanged ? 0 : bust
+
+    const key = `${track ?? ''}::${artist ?? ''}::${effectiveBust}`
     if (key === lastKey.current) return
     lastKey.current = key
 
     // On a forced bust, drop the in-memory cache for this track so stale
     // results from a previous fetch aren't returned.
-    if (bust > 0) {
-      const staleKey = `${track ?? ''}::${artist ?? ''}::${bust - 1}`
+    if (effectiveBust > 0) {
+      const staleKey = `${track ?? ''}::${artist ?? ''}::${effectiveBust - 1}`
       cache.current.delete(staleKey)
     }
 
@@ -47,7 +55,7 @@ export function useFurigana(
     fetch('/api/ai/furigana', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lines, track, artist, force: bust > 0 }),
+      body: JSON.stringify({ lines, track, artist, force: effectiveBust > 0 }),
     })
       .then((res) => {
         if (!res.ok) return res.json().then((d) => { throw new Error(d.error ?? 'Furigana request failed') })
