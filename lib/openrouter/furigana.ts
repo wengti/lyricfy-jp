@@ -61,7 +61,8 @@ ${japaneseLines.map((l, i) => `${i + 1}. ${l}`).join('\n')}`
   })
 
   const jsonMatch = content.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('No JSON object found in model response')
+  if (!jsonMatch) throw new Error(`No JSON object found in model response. Got: "${content.slice(0, 300)}"`)
+
   const parsed = JSON.parse(jsonMatch[0]) as FuriganaResponse
 
   // Merge model results back into their original positions
@@ -75,7 +76,7 @@ ${japaneseLines.map((l, i) => `${i + 1}. ${l}`).join('\n')}`
     // Verify the tokens faithfully reconstruct the original line.
     // If they don't (truncated, skipped, or altered by the model), fall back to
     // empty tokens so LyricsLine shows the raw text instead of corrupted output.
-    const normalize = (s: string) => s.trim().replace(/\s+/g, ' ')
+    const normalize = (s: string) => s.replace(/\s+/g, '')
     const reconstructed = normalize(tokens.map((t) => t.original).join(''))
     const validTokens = reconstructed === normalize(japaneseLines[batchIndex]) ? tokens : []
 
