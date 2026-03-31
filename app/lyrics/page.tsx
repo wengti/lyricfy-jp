@@ -179,8 +179,8 @@ export default function LyricsPage() {
             Connect Spotify
           </a>
           <p className="text-xs text-gray-400 dark:text-gray-500">
-            You&apos;ll need to add your Spotify Client ID and Secret in{' '}
-            <a href="/settings" className="underline">Settings</a> first.
+            Go to <a href="/settings" className="underline">Settings</a> to add your OpenRouter API key
+            for AI furigana &amp; translations. Without it you can still view translations cached by other users.
           </p>
         </div>
       )}
