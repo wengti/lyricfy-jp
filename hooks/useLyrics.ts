@@ -46,5 +46,9 @@ export function useLyrics(track: string | null, artist: string | null) {
       .finally(() => setLoading(false))
   }, [track, artist])
 
-  return { result, loading, error }
+  function invalidate(t: string, a: string) {
+    cache.current.delete(`${t}::${a}`)
+  }
+
+  return { result, loading, error, invalidate }
 }

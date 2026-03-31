@@ -13,6 +13,7 @@ import NowPlayingBanner from '@/components/lyrics/NowPlayingBanner'
 import LyricsDisplay from '@/components/lyrics/LyricsDisplay'
 import ManualLyricsInput from '@/components/lyrics/ManualLyricsInput'
 import SaveToDictionaryModal from '@/components/lyrics/SaveToDictionaryModal'
+import SyncedVersionBanner from '@/components/lyrics/SyncedVersionBanner'
 import type { LrcLine, TranslatedLine } from '@/types/ai'
 
 export default function LyricsPage() {
@@ -33,17 +34,27 @@ export default function LyricsPage() {
   const manualLinesMap = useRef<Map<string, LrcLine[]>>(new Map())
   const [selectedPhrase, setSelectedPhrase] = useState<string | null>(null)
   const [autoScroll, setAutoScroll] = useState(true)
+  const [syncedUpgrade, setSyncedUpgrade] = useState<{ lines: LrcLine[] } | null>(null)
+  const [acceptingUpgrade, setAcceptingUpgrade] = useState(false)
+  const [upgradedSyncLines, setUpgradedSyncLines] = useState<LrcLine[] | null>(null)
 
   const track = playing?.track ?? null
-  const { result: lyricsResult, loading: lyricsLoading } = useLyrics(
+  const { result: lyricsResult, loading: lyricsLoading, invalidate: invalidateLyrics } = useLyrics(
     track?.name ?? null,
     track?.artist ?? null
   )
 
-  // Use manual lines if provided, otherwise use fetched lines
-  const activeLyricsResult = manualLines
-    ? { lines: manualLines, synced: false, notFound: false, isJapanese: true, wasRomaji: false, source: 'manual' as const }
-    : lyricsResult
+  // Use manual lines if provided, otherwise use fetched lines.
+  // If admin accepted a synced upgrade this session, overlay the new synced lines.
+  const activeLyricsResult = useMemo(() => {
+    const base = manualLines
+      ? { lines: manualLines, synced: false, notFound: false, isJapanese: true, wasRomaji: false, source: 'manual' as const }
+      : lyricsResult
+    if (upgradedSyncLines && base) {
+      return { ...base, lines: upgradedSyncLines, synced: true }
+    }
+    return base
+  }, [manualLines, lyricsResult, upgradedSyncLines])
 
   const rawLines = useMemo(
     () => activeLyricsResult?.isJapanese ? activeLyricsResult.lines.map((l) => l.text) : null,
@@ -82,6 +93,8 @@ export default function LyricsPage() {
     setAutoScroll(true)
     setRetranslating(false)
     setOverrideTranslations(null)
+    setSyncedUpgrade(null)
+    setUpgradedSyncLines(null)
   }, [track?.id])
 
   // Disable auto-scroll when user manually scrolls
@@ -105,7 +118,59 @@ export default function LyricsPage() {
     }
   }, [])
 
+  // Background check: when displaying unsynced Japanese lyrics, silently query lrclib.net
+  // to see if a synced version has become available since the cache was written.
+  useEffect(() => {
+    if (
+      !lyricsResult ||
+      !lyricsResult.isJapanese ||
+      lyricsResult.synced ||
+      manualLines ||
+      !track?.name ||
+      !track?.artist
+    ) return
+
+    const controller = new AbortController()
+    const params = new URLSearchParams({ track: track.name, artist: track.artist })
+    fetch(`/api/lyrics/check-synced?${params}`, { signal: controller.signal })
+      .then((r) => r.json())
+      .then((d) => { if (d.hasSynced) setSyncedUpgrade({ lines: d.lines }) })
+      .catch(() => {})
+
+    return () => controller.abort()
+  }, [lyricsResult, track?.name, track?.artist, manualLines])
+
   const progressMs = playing?.progressMs ?? 0
+
+  async function handleAcceptUpgrade() {
+    if (!syncedUpgrade || !track?.name || !track?.artist) return
+    setAcceptingUpgrade(true)
+    try {
+      const lines = syncedUpgrade.lines.map((l) => l.text)
+      const timestamps = syncedUpgrade.lines.map((l) => l.ms)
+      const res = await fetch('/api/ai/furigana', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lines,
+          track: track.name,
+          artist: track.artist,
+          syncedUpgrade: true,
+          timestamps,
+          synced: true,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setOverrideTranslations(data.lines as TranslatedLine[])
+        setUpgradedSyncLines(syncedUpgrade.lines)
+        setSyncedUpgrade(null)
+        invalidateLyrics(track.name, track.artist)
+      }
+    } finally {
+      setAcceptingUpgrade(false)
+    }
+  }
 
   async function handleRetranslate() {
     if (!activeLyricsResult || !track || !rawLines || rawLines.length === 0) return
@@ -316,6 +381,18 @@ export default function LyricsPage() {
         <div className="mb-4 py-2 text-center text-sm text-gray-400 animate-pulse dark:text-gray-500">
           Converting romaji to Japanese…
         </div>
+      )}
+
+      {/* Synced upgrade banner */}
+      {syncedUpgrade && track?.name && track?.artist && (
+        <SyncedVersionBanner
+          lines={syncedUpgrade.lines}
+          isAdmin={isAdmin ?? false}
+          onAccept={handleAcceptUpgrade}
+          accepting={acceptingUpgrade}
+          track={track.name}
+          artist={track.artist}
+        />
       )}
 
       {/* Main lyrics display */}

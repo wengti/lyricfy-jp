@@ -13,8 +13,9 @@ const schema = z.object({
   lines: z.array(z.string()).min(1),
   track: z.string().optional(),
   artist: z.string().optional(),
-  force: z.boolean().optional(),    // bypass cache and overwrite with fresh result
-  wasRomaji: z.boolean().optional(), // lyrics were romaji-converted — save as 'manual' to persist
+  force: z.boolean().optional(),          // bypass cache and overwrite with fresh result
+  wasRomaji: z.boolean().optional(),       // lyrics were romaji-converted — save as 'manual' to persist
+  syncedUpgrade: z.boolean().optional(),  // admin accepting a newly-synced lrclib version
   timestamps: z.array(z.number()).optional(), // ms timestamps from the original synced LRC
   synced: z.boolean().optional(),             // whether the original lyrics were synced
 })
@@ -26,10 +27,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
   }
 
-  const { lines, track, artist, force, wasRomaji, timestamps, synced } = parsed.data
+  const { lines, track, artist, force, wasRomaji, syncedUpgrade, timestamps, synced } = parsed.data
 
-  // Force-overwrite is an admin-only action
-  if (force) {
+  // Force-overwrite and synced-upgrade are admin-only actions
+  if (force || syncedUpgrade) {
     try {
       await requireAdmin()
     } catch (e) {
@@ -37,8 +38,8 @@ export async function POST(request: Request) {
     }
   }
 
-  // Check Supabase cache first (skipped when force=true) — no API key needed
-  if (!force && track && artist) {
+  // Check Supabase cache first (skipped when force or syncedUpgrade) — no API key needed
+  if (!force && !syncedUpgrade && track && artist) {
     const cached = await getCachedTranslation(track, artist)
     if (cached) {
       return NextResponse.json({ lines: cached })
@@ -67,12 +68,12 @@ export async function POST(request: Request) {
     // Only cache when at least one line has furigana tokens — guards against
     // saving empty results for non-Japanese content or stale/mismatched lines.
     if (track && artist && all.some((l) => l.tokens.length > 0)) {
-      const saveSource = wasRomaji ? 'lrclib-romaji' : (force ? 'manual' : 'lrclib')
+      const saveSource = wasRomaji ? 'lrclib-romaji' : syncedUpgrade ? 'lrclib' : force ? 'manual' : 'lrclib'
       await setCachedTranslation(
         track, artist, all, lines,
         saveSource,
-        (wasRomaji || force) ? timestamps : undefined,
-        (wasRomaji || force) ? synced : undefined,
+        (wasRomaji || force || syncedUpgrade) ? timestamps : undefined,
+        (wasRomaji || force || syncedUpgrade) ? synced : undefined,
       )
     }
 
