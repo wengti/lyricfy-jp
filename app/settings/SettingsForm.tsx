@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, CheckCircle2, Plus, Minus, ShieldCheck } from 'lucide-react'
+import { Loader2, CheckCircle2, Plus, Minus, ShieldCheck, Users } from 'lucide-react'
 import ConfidentialityBanner from '@/components/settings/ConfidentialityBanner'
 import ApiKeyInput from '@/components/settings/ApiKeyInput'
 import TutorialAccordion from '@/components/settings/TutorialAccordion'
@@ -22,6 +22,7 @@ interface Props {
 
 export default function SettingsForm({ savedKeys }: Props) {
   const [securityOpen, setSecurityOpen] = useState(false)
+  const [cacheOpen, setCacheOpen] = useState(false)
   const [form, setForm] = useState({
     openrouter_api_key: '',
   })
@@ -107,6 +108,39 @@ export default function SettingsForm({ savedKeys }: Props) {
             </div>
           </div>
         </div>
+        {/* Shared cache accordion */}
+        <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50">
+          <button
+            type="button"
+            onClick={() => setCacheOpen((o) => !o)}
+            className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+          >
+            <span className="flex items-center gap-2">
+              <Users size={15} className="text-indigo-500" />
+              Do I have to provide an API key?
+            </span>
+            {cacheOpen
+              ? <Minus size={16} className="text-gray-400 dark:text-gray-500" />
+              : <Plus size={16} className="text-gray-400 dark:text-gray-500" />
+            }
+          </button>
+          <div className={`grid transition-all duration-200 ${cacheOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+            <div className="overflow-hidden">
+              <div className="space-y-2 px-4 pb-4 pt-1 text-sm text-gray-600 dark:text-gray-400">
+                <p>
+                  No. When a song is translated, the result is stored in a <strong className="text-gray-800 dark:text-gray-200">shared cache</strong>.
+                  Any user who plays the same song afterwards will see the cached furigana and translations instantly —
+                  no API key required.
+                </p>
+                <p>
+                  An API key is only needed to translate a song that <strong className="text-gray-800 dark:text-gray-200">no one has played before</strong>.
+                  If you mostly listen to popular Japanese songs, chances are the cache already has them covered.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <ApiKeyInput
           id="openrouter_api_key"
           label="API Key"
