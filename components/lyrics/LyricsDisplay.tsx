@@ -10,6 +10,7 @@ interface Props {
   source: 'lrclib' | 'genius' | 'manual' | null
   translatedLines: TranslatedLine[] | null
   translationsLoading?: boolean
+  furiganaError?: string | null
   progressMs: number
   autoScroll: boolean
   onSelectPhrase?: (text: string, lineIndex: number) => void
@@ -31,6 +32,7 @@ export default function LyricsDisplay({
   source,
   translatedLines,
   translationsLoading,
+  furiganaError,
   progressMs,
   autoScroll,
   onSelectPhrase,
@@ -61,15 +63,25 @@ export default function LyricsDisplay({
     <div>
       {/* Controls */}
       <div className="mb-4 flex items-center justify-between gap-3">
-        {/* Source badge */}
-        {source && SOURCE_BADGE[source] && (() => {
-          const badge = SOURCE_BADGE[source][synced ? 'synced' : 'unsynced'] ?? SOURCE_BADGE[source]['unsynced']
-          return badge ? (
-            <span title={badge.title} className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${badge.cls}`}>
-              {badge.label}
+        {/* Source badge + furigana error badge */}
+        <div className="flex items-center gap-2">
+          {source && SOURCE_BADGE[source] && (() => {
+            const badge = SOURCE_BADGE[source][synced ? 'synced' : 'unsynced'] ?? SOURCE_BADGE[source]['unsynced']
+            return badge ? (
+              <span title={badge.title} className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${badge.cls}`}>
+                {badge.label}
+              </span>
+            ) : null
+          })()}
+          {furiganaError && (
+            <span
+              title={furiganaError}
+              className="rounded-full border border-red-200 bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
+            >
+              Uncached new song
             </span>
-          ) : null
-        })()}
+          )}
+        </div>
 
         <div className="ml-auto flex items-center gap-3">
           {translationsLoading && (

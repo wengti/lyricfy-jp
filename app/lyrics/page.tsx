@@ -12,7 +12,6 @@ import NowPlayingBanner from '@/components/lyrics/NowPlayingBanner'
 import LyricsDisplay from '@/components/lyrics/LyricsDisplay'
 import ManualLyricsInput from '@/components/lyrics/ManualLyricsInput'
 import SaveToDictionaryModal from '@/components/lyrics/SaveToDictionaryModal'
-import Toast from '@/components/ui/Toast'
 import type { LrcLine } from '@/types/ai'
 
 export default function LyricsPage() {
@@ -53,12 +52,6 @@ export default function LyricsPage() {
   )
 
   const { translatedLines, loading: furiganaLoading, error: furiganaError } = useFurigana(rawLines, track?.name ?? null, track?.artist ?? null, furiganaBust)
-  const [toastDismissed, setToastDismissed] = useState(false)
-
-  // Show toast again whenever a new error arrives
-  useEffect(() => {
-    if (furiganaError) setToastDismissed(false)
-  }, [furiganaError])
   const { addEntry } = useDictionary()
 
   // Restore per-song manual lines (or null) when track changes
@@ -248,14 +241,6 @@ export default function LyricsPage() {
         </div>
       )}
 
-      {/* Furigana error toast */}
-      {furiganaError && !toastDismissed && (
-        <Toast
-          message={`Translation error: ${furiganaError}`}
-          onDismiss={() => setToastDismissed(true)}
-        />
-      )}
-
       {/* Main lyrics display */}
       {activeLyricsResult && activeLyricsResult.lines.length > 0 && (
         <LyricsDisplay
@@ -264,6 +249,7 @@ export default function LyricsPage() {
           source={activeLyricsResult.source ?? null}
           translatedLines={activeLyricsResult.isJapanese ? translatedLines : null}
           translationsLoading={activeLyricsResult.isJapanese && furiganaLoading}
+          furiganaError={activeLyricsResult.isJapanese ? furiganaError : null}
           progressMs={progressMs}
           autoScroll={autoScroll}
           onSelectPhrase={activeLyricsResult.isJapanese ? (phrase) => setSelectedPhrase(phrase) : undefined}
