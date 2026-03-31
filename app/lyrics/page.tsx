@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Music, Link as LinkIcon, AlertTriangle, Navigation } from 'lucide-react'
 import { useNowPlaying } from '@/hooks/useNowPlaying'
@@ -25,6 +25,7 @@ export default function LyricsPage() {
   const [furiganaBust, setFuriganaBust] = useState(0)
   const [showReplace, setShowReplace] = useState(false)
   const [romajiConverting, setRomajiConverting] = useState(false)
+  const conversionControllerRef = useRef<AbortController | null>(null)
   const [selectedPhrase, setSelectedPhrase] = useState<string | null>(null)
   const [autoScroll, setAutoScroll] = useState(true)
 
@@ -60,6 +61,9 @@ export default function LyricsPage() {
 
   // Reset manual lines and re-enable auto-scroll when track changes
   useEffect(() => {
+    conversionControllerRef.current?.abort()
+    conversionControllerRef.current = null
+    setRomajiConverting(false)
     setManualLines(null)
     setFuriganaBust(0)
     setShowReplace(false)
@@ -89,7 +93,19 @@ export default function LyricsPage() {
 
   const progressMs = playing?.progressMs ?? 0
 
+  function cancelManualSubmit() {
+    conversionControllerRef.current?.abort()
+    conversionControllerRef.current = null
+    setRomajiConverting(false)
+    setShowReplace(false)
+  }
+
   async function handleManualSubmit(lines: LrcLine[]) {
+    // Abort any previous in-flight conversion
+    conversionControllerRef.current?.abort()
+    const controller = new AbortController()
+    conversionControllerRef.current = controller
+
     const texts = lines.map((l) => l.text)
     if (detectScript(texts) === 'romaji') {
       setRomajiConverting(true)
@@ -98,23 +114,29 @@ export default function LyricsPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lines: texts }),
+          signal: controller.signal,
         })
+        if (controller.signal.aborted) return
         if (!res.ok) throw new Error('Romaji conversion failed')
         const data = await res.json()
+        if (controller.signal.aborted) return
         const converted: LrcLine[] = (data.lines as string[]).map((text, i) => ({
           ms: lines[i].ms,
           text,
         }))
         setManualLines(converted)
-      } catch {
+      } catch (e) {
+        if (controller.signal.aborted) return
         // Fall back to original lines if conversion fails
         setManualLines(lines)
       } finally {
-        setRomajiConverting(false)
+        if (!controller.signal.aborted) setRomajiConverting(false)
       }
     } else {
+      if (controller.signal.aborted) return
       setManualLines(lines)
     }
+    if (controller.signal.aborted) return
     setFuriganaBust((b) => b + 1)
     setShowReplace(false)
   }
@@ -206,7 +228,7 @@ export default function LyricsPage() {
             onSubmit={handleManualSubmit}
           />
           <button
-            onClick={() => setShowReplace(false)}
+            onClick={cancelManualSubmit}
             className="mt-2 text-xs text-gray-400 underline hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
           >
             Cancel
