@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getLyricsFromLrclib } from '@/lib/lrclib/client'
+import { reconstructLinesFromCache } from '@/lib/lyricsCache'
 import { detectScript } from '@/lib/utils/japanese'
 import type { LyricsResult } from '@/types/ai'
 
@@ -21,8 +22,22 @@ export async function GET(request: Request) {
   const result = await getLyricsFromLrclib(track, artist)
   const source: LyricsResult['source'] = result ? 'lrclib' : null
 
-  // Not found
+  // lrclib found nothing — check Supabase cache before declaring not found.
+  // Covers songs where an admin previously pasted and translated lyrics manually.
   if (!result) {
+    const cachedLines = await reconstructLinesFromCache(track, artist)
+    if (cachedLines) {
+      const response: LyricsResult = {
+        lines: cachedLines,
+        synced: false,
+        notFound: false,
+        isJapanese: true,
+        wasRomaji: false,
+        source: 'manual',
+      }
+      return NextResponse.json(response)
+    }
+
     const response: LyricsResult = {
       lines: [],
       synced: false,

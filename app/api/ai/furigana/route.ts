@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
   // Check Supabase cache first (skipped when force=true) — no API key needed
   if (!force && track && artist) {
-    const cached = await getCachedTranslation(track, artist, lines)
+    const cached = await getCachedTranslation(track, artist)
     if (cached) {
       return NextResponse.json({ lines: cached })
     }

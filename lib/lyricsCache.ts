@@ -1,6 +1,6 @@
 import { createHash } from 'crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { TranslatedLine } from '@/types/ai'
+import type { LrcLine, TranslatedLine } from '@/types/ai'
 
 function normalise(s: string) {
   return s.toLowerCase().trim()
@@ -17,8 +17,7 @@ interface CacheEntry {
 
 export async function getCachedTranslation(
   track: string,
-  artist: string,
-  sourceLines: string[]
+  artist: string
 ): Promise<TranslatedLine[] | null> {
   const supabase = createAdminClient()
   const { data } = await supabase
@@ -32,15 +31,36 @@ export async function getCachedTranslation(
 
   const entry = data.translated_lines as CacheEntry | TranslatedLine[]
 
-  // Legacy format (plain array without hash) — return as-is rather than
-  // discarding it and forcing a re-translation.
+  // Legacy format (plain array without hash) — return as-is.
   if (Array.isArray(entry)) return entry as TranslatedLine[]
 
-  // Validate that the cache was built from the same source lines.
-  // A mismatch means the cache holds a manual replacement (or vice versa).
-  if (entry.linesHash !== hashLines(sourceLines)) return null
-
   return entry.lines ?? null
+}
+
+/**
+ * Reconstructs raw LrcLines from a cached translation entry.
+ * Used when lrclib has no lyrics for a song but an admin previously
+ * pasted and translated them — the stored tokens carry the original text.
+ * Returns null if no cache entry exists for this track/artist.
+ */
+export async function reconstructLinesFromCache(
+  track: string,
+  artist: string
+): Promise<LrcLine[] | null> {
+  const cached = await getCachedTranslation(track, artist)
+  if (!cached) return null
+
+  const lines = cached
+    .map((line) => ({
+      ms: 0,
+      // Japanese lines: rebuild from tokens. Non-Japanese (empty tokens): use translation text.
+      text: line.tokens.length > 0
+        ? line.tokens.map((t) => t.original).join('')
+        : line.translation,
+    }))
+    .filter((l) => l.text.trim())
+
+  return lines.length > 0 ? lines : null
 }
 
 export async function setCachedTranslation(
