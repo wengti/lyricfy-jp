@@ -7,6 +7,7 @@ import { useNowPlaying } from '@/hooks/useNowPlaying'
 import { useLyrics } from '@/hooks/useLyrics'
 import { useFurigana } from '@/hooks/useFurigana'
 import { useDictionary } from '@/hooks/useDictionary'
+import { useIsAdmin } from '@/hooks/useIsAdmin'
 import { detectScript } from '@/lib/utils/japanese'
 import NowPlayingBanner from '@/components/lyrics/NowPlayingBanner'
 import LyricsDisplay from '@/components/lyrics/LyricsDisplay'
@@ -20,6 +21,7 @@ export default function LyricsPage() {
   const spotifyError = searchParams.get('spotify_error')
 
   const { connected, playing, loading: spotifyLoading } = useNowPlaying()
+  const isAdmin = useIsAdmin()
   const [manualLines, setManualLines] = useState<LrcLine[] | null>(null)
   const [furiganaBust, setFuriganaBust] = useState(0)
   const [romajiConverting, setRomajiConverting] = useState(false)
@@ -196,7 +198,22 @@ export default function LyricsPage() {
 
       {/* Lyrics not found */}
       {activeLyricsResult?.notFound && !manualLines && (
-        <ManualLyricsInput onSubmit={handleManualSubmit} />
+        isAdmin
+          ? <ManualLyricsInput onSubmit={handleManualSubmit} />
+          : (
+            <div className="mb-4 rounded-xl border border-gray-100 bg-white px-4 py-6 text-center dark:border-gray-800 dark:bg-gray-900">
+              <p className="m-2 text-sm text-gray-500 dark:text-gray-400">
+                No lyrics found for this song.{' '}
+                <a
+                  href="mailto:wengti@hotmail.com"
+                  className="underline hover:text-gray-700 dark:hover:text-gray-300"
+                >
+                  Contact the admin
+                </a>
+                {' '}to have them added.
+              </p>
+            </div>
+          )
       )}
 
       {/* Replace lyrics — admins only; non-admins see a contact prompt */}
