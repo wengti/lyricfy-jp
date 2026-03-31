@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, CheckCircle2, Plus, Minus, ShieldCheck, Users } from 'lucide-react'
+import { Loader2, CheckCircle2, Plus, Minus, ShieldCheck, Users, Trash2 } from 'lucide-react'
 import ConfidentialityBanner from '@/components/settings/ConfidentialityBanner'
 import ApiKeyInput from '@/components/settings/ApiKeyInput'
 import TutorialAccordion from '@/components/settings/TutorialAccordion'
@@ -29,6 +29,7 @@ export default function SettingsForm({ savedKeys }: Props) {
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [localSavedKeys, setLocalSavedKeys] = useState<MaskedApiKeys | null>(savedKeys)
+  const [deleting, setDeleting] = useState(false)
 
   function setField(field: keyof typeof form, value: string) {
     setForm((f) => ({ ...f, [field]: value }))
@@ -60,6 +61,25 @@ export default function SettingsForm({ savedKeys }: Props) {
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : 'Save failed')
       setStatus('error')
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm('Remove your API key? This cannot be undone.')) return
+    setDeleting(true)
+    try {
+      const res = await fetch('/api/settings', { method: 'DELETE' })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error ?? 'Delete failed')
+      }
+      setLocalSavedKeys(null)
+      setForm({ openrouter_api_key: '' })
+    } catch (e) {
+      setErrorMsg(e instanceof Error ? e.message : 'Delete failed')
+      setStatus('error')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -160,12 +180,24 @@ export default function SettingsForm({ savedKeys }: Props) {
       <div className="flex items-center gap-4 border-t border-gray-100 pt-6 dark:border-gray-800">
         <button
           type="submit"
-          disabled={status === 'saving'}
+          disabled={status === 'saving' || deleting}
           className="flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
         >
           {status === 'saving' && <Loader2 size={15} className="animate-spin" />}
           {status === 'saving' ? 'Saving…' : 'Save all keys'}
         </button>
+
+        {localSavedKeys && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting || status === 'saving'}
+            className="flex items-center gap-1.5 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-60 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/40"
+          >
+            {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+            {deleting ? 'Removing…' : 'Remove key'}
+          </button>
+        )}
 
         {status === 'success' && (
           <span className="flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
