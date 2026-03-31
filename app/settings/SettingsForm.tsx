@@ -70,7 +70,7 @@ export default function SettingsForm({ savedKeys }: Props) {
         <h2 className="mb-1 text-base font-semibold text-gray-900 dark:text-gray-100">OpenRouter</h2>
         <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
           Used for AI furigana annotations, English translations, word enrichment, and romaji conversion.
-          The free <code className="rounded bg-gray-100 px-1 text-xs dark:bg-gray-800 dark:text-gray-300">google/gemma-3-27b-it:free</code> model is used.
+          The <code className="rounded bg-gray-100 px-1 text-xs dark:bg-gray-800 dark:text-gray-300">google/gemini-2.0-flash-001</code> model is used.
         </p>
         <TutorialAccordion service="OpenRouter" steps={OPENROUTER_STEPS} />
         <ApiKeyInput
