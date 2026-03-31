@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, CheckCircle2 } from 'lucide-react'
+import { Loader2, CheckCircle2, Plus, Minus, ShieldCheck } from 'lucide-react'
 import ConfidentialityBanner from '@/components/settings/ConfidentialityBanner'
 import ApiKeyInput from '@/components/settings/ApiKeyInput'
 import TutorialAccordion from '@/components/settings/TutorialAccordion'
@@ -21,6 +21,7 @@ interface Props {
 }
 
 export default function SettingsForm({ savedKeys }: Props) {
+  const [securityOpen, setSecurityOpen] = useState(false)
   const [form, setForm] = useState({
     openrouter_api_key: '',
   })
@@ -73,6 +74,39 @@ export default function SettingsForm({ savedKeys }: Props) {
           The <code className="rounded bg-gray-100 px-1 text-xs dark:bg-gray-800 dark:text-gray-300">google/gemini-2.0-flash-001</code> model is used.
         </p>
         <TutorialAccordion service="OpenRouter" steps={OPENROUTER_STEPS} />
+
+        {/* Security accordion */}
+        <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50">
+          <button
+            type="button"
+            onClick={() => setSecurityOpen((o) => !o)}
+            className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+          >
+            <span className="flex items-center gap-2">
+              <ShieldCheck size={15} className="text-indigo-500" />
+              How is my API key protected?
+            </span>
+            {securityOpen
+              ? <Minus size={16} className="text-gray-400 dark:text-gray-500" />
+              : <Plus size={16} className="text-gray-400 dark:text-gray-500" />
+            }
+          </button>
+          <div className={`grid transition-all duration-200 ${securityOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+            <div className="overflow-hidden">
+              <div className="space-y-2 px-4 pb-4 pt-1 text-sm text-gray-600 dark:text-gray-400">
+                <p>
+                  Your key is encrypted with <strong className="text-gray-800 dark:text-gray-200">AES-256-GCM</strong> before
+                  being written to the database. The encryption secret lives only in the server environment —
+                  it is never stored in the database itself.
+                </p>
+                <p>
+                  This means that even the app admin cannot read your key by looking at the database.
+                  Your key is decrypted solely in server memory, and only at the moment it is needed to make an AI request on your behalf.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
         <ApiKeyInput
           id="openrouter_api_key"
           label="API Key"
