@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { maskKey } from '@/lib/maskKey'
+import { decrypt } from '@/lib/encryption'
 import SettingsForm from './SettingsForm'
 
 export const metadata = { title: 'Settings — LyricfyJP' }
@@ -18,7 +19,7 @@ export default async function SettingsPage() {
 
   const savedKeys = data
     ? {
-        openrouter_api_key: maskKey(data.openrouter_api_key),
+        openrouter_api_key: maskKey(data.openrouter_api_key ? decrypt(data.openrouter_api_key) : null),
         updated_at: data.updated_at,
       }
     : null

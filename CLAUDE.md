@@ -57,7 +57,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 NEXT_PUBLIC_APP_URL=          # used for Spotify redirect URI
 SPOTIFY_CLIENT_ID=            # Spotify OAuth
 SPOTIFY_CLIENT_SECRET=        # Spotify OAuth + token refresh
+ENCRYPTION_SECRET=            # 64 hex chars (32 bytes) — AES-256-GCM key for user API keys
 ```
+
+Generate a value with: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
 
 ---
 

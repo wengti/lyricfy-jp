@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { decrypt } from '@/lib/encryption'
 
 export type UserApiKeys = {
   openrouter_api_key: string | null
@@ -25,7 +26,10 @@ export async function getUserApiKeys(): Promise<UserApiKeys | null> {
     .maybeSingle()
 
   if (error) throw new Error(`Failed to fetch API keys: ${error.message}`)
-  return data ?? null
+  if (!data) return null
+  return {
+    openrouter_api_key: data.openrouter_api_key ? decrypt(data.openrouter_api_key) : null,
+  }
 }
 
 /**

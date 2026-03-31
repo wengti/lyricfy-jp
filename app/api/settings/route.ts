@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { maskKey } from '@/lib/maskKey'
+import { encrypt, decrypt } from '@/lib/encryption'
 import { z } from 'zod'
 
 const updateSchema = z.object({
@@ -23,7 +24,7 @@ export async function GET() {
 
   return NextResponse.json({
     keys: {
-      openrouter_api_key: maskKey(data.openrouter_api_key),
+      openrouter_api_key: maskKey(data.openrouter_api_key ? decrypt(data.openrouter_api_key) : null),
       updated_at: data.updated_at,
     },
   })
@@ -41,9 +42,10 @@ export async function PUT(request: Request) {
   }
 
   // Only include non-empty fields — empty string = "don't overwrite"
+  // Encrypt each value before storing so plaintext never lands in the DB.
   const payload: Record<string, string> = {}
   for (const [k, v] of Object.entries(parsed.data)) {
-    if (v && v.trim() !== '') payload[k] = v.trim()
+    if (v && v.trim() !== '') payload[k] = encrypt(v.trim())
   }
 
   if (Object.keys(payload).length === 0) {
