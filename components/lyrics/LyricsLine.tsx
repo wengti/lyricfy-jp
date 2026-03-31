@@ -31,7 +31,7 @@ export default function LyricsLine({ line, rawText, isActive, showTranslation, a
       }`}
     >
       <p className={`text-3xl sm:text-4xl leading-loose ${isActive ? 'font-medium' : ''}`}>
-        {line ? <RubyText tokens={line.tokens} /> : rawText}
+        {line && line.tokens.length > 0 ? <RubyText tokens={line.tokens} /> : rawText}
       </p>
       {showTranslation && line?.translation && (
         <p className="-mt-4 mb-4 text-[1.1em] text-gray-400 italic">{line.translation}</p>

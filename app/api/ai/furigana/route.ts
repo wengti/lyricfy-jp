@@ -6,7 +6,7 @@ import { generateFuriganaAndTranslations } from '@/lib/openrouter/furigana'
 import { getCachedTranslation, setCachedTranslation } from '@/lib/lyricsCache'
 import { z } from 'zod'
 
-const BATCH_SIZE = 25
+const BATCH_SIZE = 15
 
 const schema = z.object({
   lines: z.array(z.string()).min(1),
