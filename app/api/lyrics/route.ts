@@ -22,11 +22,11 @@ export async function GET(request: Request) {
   // This bypasses lrclib entirely so admin corrections aren't overridden by
   // lrclib's (potentially longer/different) line set, which would cause
   // untranslated lines to appear at the end of the song for non-admin users.
-  const manualLines = await getManualCachedLines(track, artist)
-  if (manualLines) {
+  const manualResult = await getManualCachedLines(track, artist)
+  if (manualResult) {
     const response: LyricsResult = {
-      lines: manualLines,
-      synced: false,
+      lines: manualResult.lines,
+      synced: manualResult.synced,
       notFound: false,
       isJapanese: true,
       wasRomaji: false,

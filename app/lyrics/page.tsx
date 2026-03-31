@@ -53,7 +53,18 @@ export default function LyricsPage() {
     [lyricsResult, manualLines]
   )
 
-  const { translatedLines, loading: furiganaLoading, error: furiganaError } = useFurigana(rawLines, track?.name ?? null, track?.artist ?? null, furiganaBust)
+  // Timestamps forwarded to the furigana API on re-translate so synced lyrics
+  // remain synced after the cache is overwritten with a manual entry.
+  const rawTimestamps = useMemo(
+    () => activeLyricsResult?.isJapanese ? activeLyricsResult.lines.map((l) => l.ms) : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lyricsResult, manualLines]
+  )
+
+  const { translatedLines, loading: furiganaLoading, error: furiganaError } = useFurigana(
+    rawLines, track?.name ?? null, track?.artist ?? null,
+    furiganaBust, rawTimestamps, activeLyricsResult?.synced ?? false,
+  )
   const { addEntry } = useDictionary()
 
   // Restore per-song manual lines (or null) when track changes

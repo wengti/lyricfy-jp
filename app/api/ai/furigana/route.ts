@@ -14,6 +14,8 @@ const schema = z.object({
   track: z.string().optional(),
   artist: z.string().optional(),
   force: z.boolean().optional(), // bypass cache and overwrite with fresh result
+  timestamps: z.array(z.number()).optional(), // ms timestamps from the original synced LRC
+  synced: z.boolean().optional(),             // whether the original lyrics were synced
 })
 
 export async function POST(request: Request) {
@@ -23,7 +25,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
   }
 
-  const { lines, track, artist, force } = parsed.data
+  const { lines, track, artist, force, timestamps, synced } = parsed.data
 
   // Force-overwrite is an admin-only action
   if (force) {
@@ -64,7 +66,12 @@ export async function POST(request: Request) {
     // Only cache when at least one line has furigana tokens — guards against
     // saving empty results for non-Japanese content or stale/mismatched lines.
     if (track && artist && all.some((l) => l.tokens.length > 0)) {
-      await setCachedTranslation(track, artist, all, lines, force ? 'manual' : 'lrclib')
+      await setCachedTranslation(
+        track, artist, all, lines,
+        force ? 'manual' : 'lrclib',
+        force ? timestamps : undefined,
+        force ? synced : undefined,
+      )
     }
 
     return NextResponse.json({ lines: all })

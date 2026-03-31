@@ -14,6 +14,8 @@ interface CacheEntry {
   linesHash: string
   lines: TranslatedLine[]
   source?: 'manual' | 'lrclib'
+  timestamps?: number[] // ms timestamps from the original synced LRC, only stored for manual entries
+  synced?: boolean      // whether the original lyrics had LRC timestamps
 }
 
 export async function getCachedTranslation(
@@ -49,7 +51,7 @@ export async function getCachedTranslation(
 export async function getManualCachedLines(
   track: string,
   artist: string
-): Promise<LrcLine[] | null> {
+): Promise<{ lines: LrcLine[]; synced: boolean } | null> {
   const supabase = createAdminClient()
   const { data } = await supabase
     .from('lyrics_cache')
@@ -64,19 +66,21 @@ export async function getManualCachedLines(
 
   // Legacy format (plain array, no source) — treat as manual (created before source tracking)
   if (Array.isArray(entry)) {
-    return reconstructLines(entry as TranslatedLine[])
+    const lines = reconstructLines(entry as TranslatedLine[])
+    return lines ? { lines, synced: false } : null
   }
 
   // Only return lines if explicitly manual; lrclib-sourced entries should defer to lrclib
   if (entry.source === 'lrclib') return null
 
-  return reconstructLines(entry.lines ?? [])
+  const lines = reconstructLines(entry.lines ?? [], entry.timestamps)
+  return lines ? { lines, synced: entry.synced ?? false } : null
 }
 
-function reconstructLines(cached: TranslatedLine[]): LrcLine[] | null {
+function reconstructLines(cached: TranslatedLine[], timestamps?: number[]): LrcLine[] | null {
   const lines = cached
-    .map((line) => ({
-      ms: 0,
+    .map((line, i) => ({
+      ms: timestamps?.[i] ?? 0,
       text: line.tokens.length > 0
         ? line.tokens.map((t) => t.original).join('')
         : line.translation,
@@ -91,13 +95,17 @@ export async function setCachedTranslation(
   artist: string,
   lines: TranslatedLine[],
   sourceLines: string[],
-  source: 'manual' | 'lrclib' = 'lrclib'
+  source: 'manual' | 'lrclib' = 'lrclib',
+  timestamps?: number[],
+  synced?: boolean
 ): Promise<void> {
   const supabase = createAdminClient()
   const entry: CacheEntry = {
     linesHash: hashLines(sourceLines),
     lines,
     source,
+    ...(timestamps ? { timestamps } : {}),
+    ...(synced !== undefined ? { synced } : {}),
   }
   await supabase.from('lyrics_cache').upsert(
     {
