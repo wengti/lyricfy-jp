@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
   // Check Supabase cache first (skipped when force=true)
   if (!force && track && artist) {
-    const cached = await getCachedTranslation(track, artist)
+    const cached = await getCachedTranslation(track, artist, lines)
     if (cached) {
       return NextResponse.json({ lines: cached })
     }
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
     // Store in cache for future requests
     if (track && artist) {
-      await setCachedTranslation(track, artist, all)
+      await setCachedTranslation(track, artist, all, lines)
     }
 
     return NextResponse.json({ lines: all })
