@@ -21,7 +21,7 @@ export default function LyricsPage() {
   const spotifyConnected = searchParams.get('spotify_connected') === '1'
   const spotifyError = searchParams.get('spotify_error')
 
-  const { connected, playing, loading: spotifyLoading } = useNowPlaying()
+  const { connected, playing, loading: spotifyLoading, seekVersion } = useNowPlaying()
   const isAdmin = useIsAdmin()
   const [manualLines, setManualLines] = useState<LrcLine[] | null>(null)
   const [furiganaBust, setFuriganaBust] = useState(0)
@@ -294,7 +294,7 @@ export default function LyricsPage() {
 
       {/* Now Playing Banner */}
       {connected && playing && (
-        <NowPlayingBanner playing={playing} />
+        <NowPlayingBanner playing={playing} seekVersion={seekVersion} />
       )}
 
       {/* No song playing */}

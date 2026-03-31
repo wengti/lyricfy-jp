@@ -3,9 +3,10 @@ import type { NowPlayingState } from '@/types/spotify'
 
 interface Props {
   playing: NowPlayingState
+  seekVersion: number
 }
 
-export default function NowPlayingBanner({ playing }: Props) {
+export default function NowPlayingBanner({ playing, seekVersion }: Props) {
   const { track, isPlaying, progressMs } = playing
   if (!track) return null
 
@@ -44,7 +45,7 @@ export default function NowPlayingBanner({ playing }: Props) {
         {/* Progress bar — keyed by track.id so it remounts instantly on song change */}
         <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
           <div
-            key={track.id}
+            key={`${track.id}-${seekVersion}`}
             className="h-full rounded-full bg-indigo-400 transition-all duration-1000"
             style={{ width: `${progressPct}%` }}
           />
