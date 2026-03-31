@@ -26,6 +26,8 @@ export default function LyricsPage() {
   const [showReplace, setShowReplace] = useState(false)
   const [romajiConverting, setRomajiConverting] = useState(false)
   const conversionControllerRef = useRef<AbortController | null>(null)
+  // Persists manually pasted lyrics per track so they survive song switches
+  const manualLinesMap = useRef<Map<string, LrcLine[]>>(new Map())
   const [selectedPhrase, setSelectedPhrase] = useState<string | null>(null)
   const [autoScroll, setAutoScroll] = useState(true)
 
@@ -59,12 +61,13 @@ export default function LyricsPage() {
   }, [furiganaError])
   const { addEntry } = useDictionary()
 
-  // Reset manual lines and re-enable auto-scroll when track changes
+  // Restore per-song manual lines (or null) when track changes
   useEffect(() => {
     conversionControllerRef.current?.abort()
     conversionControllerRef.current = null
     setRomajiConverting(false)
-    setManualLines(null)
+    const stored = track?.id ? (manualLinesMap.current.get(track.id) ?? null) : null
+    setManualLines(stored)
     setFuriganaBust(0)
     setShowReplace(false)
     setAutoScroll(true)
@@ -124,16 +127,19 @@ export default function LyricsPage() {
           ms: lines[i].ms,
           text,
         }))
+        if (track?.id) manualLinesMap.current.set(track.id, converted)
         setManualLines(converted)
       } catch (e) {
         if (controller.signal.aborted) return
         // Fall back to original lines if conversion fails
+        if (track?.id) manualLinesMap.current.set(track.id, lines)
         setManualLines(lines)
       } finally {
         if (!controller.signal.aborted) setRomajiConverting(false)
       }
     } else {
       if (controller.signal.aborted) return
+      if (track?.id) manualLinesMap.current.set(track.id, lines)
       setManualLines(lines)
     }
     if (controller.signal.aborted) return
