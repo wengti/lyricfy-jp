@@ -91,6 +91,31 @@ export default function LyricsPage() {
 
   const progressMs = playing?.progressMs ?? 0
 
+  function handleRetranslate() {
+    if (!activeLyricsResult) return
+
+    // If manual lines are already in state, use them as-is.
+    // Otherwise reconstruct the source text from the displayed translation so
+    // we re-process the correct (admin-corrected) lines, not whatever lrclib returned.
+    if (!manualLines && translatedLines) {
+      const reconstructed: LrcLine[] = translatedLines
+        .map((line, i) => ({
+          ms: activeLyricsResult.lines[i]?.ms ?? 0,
+          text: line.tokens.length > 0
+            ? line.tokens.map((t) => t.original).join('')
+            : line.translation,
+        }))
+        .filter((l) => l.text.trim())
+
+      if (reconstructed.length > 0) {
+        if (track?.id) manualLinesMap.current.set(track.id, reconstructed)
+        setManualLines(reconstructed)
+      }
+    }
+
+    setFuriganaBust((b) => b + 1)
+  }
+
   function cancelManualSubmit() {
     conversionControllerRef.current?.abort()
     conversionControllerRef.current = null
@@ -227,7 +252,14 @@ export default function LyricsPage() {
 
       {/* Replace lyrics — admins get a paste form; non-admins see a contact prompt */}
       {activeLyricsResult && !activeLyricsResult.notFound && isAdmin === true && !showReplace && (
-        <div className="mb-4 flex justify-end">
+        <div className="mb-4 flex items-center justify-end gap-4">
+          <button
+            onClick={handleRetranslate}
+            disabled={furiganaLoading}
+            className="text-xs text-gray-400 underline hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-500 dark:hover:text-gray-300"
+          >
+            {furiganaLoading ? 'Translating…' : 'Re-translate'}
+          </button>
           <button
             onClick={() => setShowReplace(true)}
             className="text-xs text-gray-400 underline hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
