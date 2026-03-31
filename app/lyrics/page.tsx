@@ -21,6 +21,7 @@ export default function LyricsPage() {
 
   const { connected, playing, loading: spotifyLoading } = useNowPlaying()
   const [manualLines, setManualLines] = useState<LrcLine[] | null>(null)
+  const [showReplace, setShowReplace] = useState(false)
   const [selectedPhrase, setSelectedPhrase] = useState<string | null>(null)
   const [autoScroll, setAutoScroll] = useState(true)
 
@@ -57,6 +58,7 @@ export default function LyricsPage() {
   // Reset manual lines and re-enable auto-scroll when track changes
   useEffect(() => {
     setManualLines(null)
+    setShowReplace(false)
     setAutoScroll(true)
   }, [track?.id])
 
@@ -150,6 +152,32 @@ export default function LyricsPage() {
       {/* Lyrics not found */}
       {activeLyricsResult?.notFound && !manualLines && (
         <ManualLyricsInput onSubmit={setManualLines} />
+      )}
+
+      {/* Replace lyrics — shown when lrclib found something but it may be wrong */}
+      {activeLyricsResult && !activeLyricsResult.notFound && !showReplace && (
+        <div className="mb-4 flex justify-end">
+          <button
+            onClick={() => setShowReplace(true)}
+            className="text-xs text-gray-400 underline hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+          >
+            Wrong lyrics? Replace them
+          </button>
+        </div>
+      )}
+      {showReplace && (
+        <div className="mb-6">
+          <ManualLyricsInput
+            heading="Paste the correct lyrics below"
+            onSubmit={(lines) => { setManualLines(lines); setShowReplace(false) }}
+          />
+          <button
+            onClick={() => setShowReplace(false)}
+            className="mt-2 text-xs text-gray-400 underline hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+          >
+            Cancel
+          </button>
+        </div>
       )}
 
       {/* Furigana error toast */}

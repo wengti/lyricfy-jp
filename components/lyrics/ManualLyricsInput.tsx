@@ -7,9 +7,10 @@ import { plainLinesToLrc } from '@/lib/utils/lrc-parser'
 
 interface Props {
   onSubmit: (lines: LrcLine[]) => void
+  heading?: string
 }
 
-export default function ManualLyricsInput({ onSubmit }: Props) {
+export default function ManualLyricsInput({ onSubmit, heading = 'Lyrics not found — paste them manually' }: Props) {
   const [text, setText] = useState('')
 
   function handleSubmit(e: React.FormEvent) {
@@ -25,7 +26,7 @@ export default function ManualLyricsInput({ onSubmit }: Props) {
     <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
       <div className="mb-3 flex items-center gap-2 text-gray-500 dark:text-gray-400">
         <FileText size={18} />
-        <p className="text-sm font-medium">Lyrics not found — paste them manually</p>
+        <p className="text-sm font-medium">{heading}</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-3">
         <textarea
