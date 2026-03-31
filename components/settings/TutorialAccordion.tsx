@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { Plus, Minus } from 'lucide-react'
 
 interface Step {
   heading: string
@@ -24,10 +24,10 @@ export default function TutorialAccordion({ service, steps }: Props) {
         className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
       >
         <span>How to get your {service} key</span>
-        <ChevronDown
-          size={16}
-          className={`text-gray-400 transition-transform duration-200 dark:text-gray-500 ${open ? 'rotate-180' : ''}`}
-        />
+        {open
+          ? <Minus size={16} className="text-gray-400 dark:text-gray-500" />
+          : <Plus size={16} className="text-gray-400 dark:text-gray-500" />
+        }
       </button>
 
       {/* Animated collapse using grid trick */}
