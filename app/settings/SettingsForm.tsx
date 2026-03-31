@@ -28,6 +28,7 @@ export default function SettingsForm({ savedKeys }: Props) {
   })
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [localSavedKeys, setLocalSavedKeys] = useState<MaskedApiKeys | null>(savedKeys)
 
   function setField(field: keyof typeof form, value: string) {
     setForm((f) => ({ ...f, [field]: value }))
@@ -48,6 +49,11 @@ export default function SettingsForm({ savedKeys }: Props) {
         const data = await res.json()
         throw new Error(data.error ?? 'Save failed')
       }
+      const refreshed = await fetch('/api/settings')
+      if (refreshed.ok) {
+        const { keys } = await refreshed.json()
+        setLocalSavedKeys(keys)
+      }
       setStatus('success')
       setForm({ openrouter_api_key: '' })
       setTimeout(() => setStatus('idle'), 3000)
@@ -57,8 +63,8 @@ export default function SettingsForm({ savedKeys }: Props) {
     }
   }
 
-  const updatedAt = savedKeys?.updated_at
-    ? new Date(savedKeys.updated_at).toLocaleDateString('en-US', {
+  const updatedAt = localSavedKeys?.updated_at
+    ? new Date(localSavedKeys.updated_at).toLocaleDateString('en-US', {
         month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit',
       })
     : null
@@ -144,7 +150,7 @@ export default function SettingsForm({ savedKeys }: Props) {
           id="openrouter_api_key"
           label="API Key"
           value={form.openrouter_api_key}
-          savedValue={savedKeys?.openrouter_api_key ?? null}
+          savedValue={localSavedKeys?.openrouter_api_key ?? null}
           onChange={(v) => setField('openrouter_api_key', v)}
           placeholder="sk-or-v1-..."
         />
