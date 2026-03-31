@@ -11,6 +11,7 @@ import NowPlayingBanner from '@/components/lyrics/NowPlayingBanner'
 import LyricsDisplay from '@/components/lyrics/LyricsDisplay'
 import ManualLyricsInput from '@/components/lyrics/ManualLyricsInput'
 import SaveToDictionaryModal from '@/components/lyrics/SaveToDictionaryModal'
+import Toast from '@/components/ui/Toast'
 import type { LrcLine } from '@/types/ai'
 
 export default function LyricsPage() {
@@ -45,6 +46,12 @@ export default function LyricsPage() {
   )
 
   const { translatedLines, loading: furiganaLoading, error: furiganaError } = useFurigana(rawLines, track?.name ?? null, track?.artist ?? null)
+  const [toastDismissed, setToastDismissed] = useState(false)
+
+  // Show toast again whenever a new error arrives
+  useEffect(() => {
+    if (furiganaError) setToastDismissed(false)
+  }, [furiganaError])
   const { addEntry } = useDictionary()
 
   // Reset manual lines and re-enable auto-scroll when track changes
@@ -145,11 +152,12 @@ export default function LyricsPage() {
         <ManualLyricsInput onSubmit={setManualLines} />
       )}
 
-      {/* Furigana error */}
-      {furiganaError && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400">
-          Translation error: {furiganaError}
-        </div>
+      {/* Furigana error toast */}
+      {furiganaError && !toastDismissed && (
+        <Toast
+          message={`Translation error: ${furiganaError}`}
+          onDismiss={() => setToastDismissed(true)}
+        />
       )}
 
       {/* Main lyrics display */}
