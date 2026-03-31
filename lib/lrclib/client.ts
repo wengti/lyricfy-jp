@@ -1,3 +1,4 @@
+import { toHiragana, isRomaji } from 'wanakana'
 import { parseLrc, plainLinesToLrc } from '@/lib/utils/lrc-parser'
 import type { LrcLine } from '@/types/ai'
 
@@ -30,40 +31,85 @@ function entryToResult(data: LrclibEntry): LrclibResult | null {
   return null
 }
 
+/** Score a search result by how well it matches the target track and artist. */
+function scoreEntry(entry: LrclibEntry, track: string, artist: string, hiraganaArtist: string): number {
+  const t = entry.trackName.toLowerCase()
+  const a = entry.artistName.toLowerCase()
+  const trackQ = track.toLowerCase()
+  const artistQ = artist.toLowerCase()
+
+  let score = 0
+
+  // Track name match
+  if (t === trackQ) score += 10
+  else if (t.includes(trackQ)) score += 4
+
+  // Artist match — check original, hiragana conversion, and substring forms
+  if (a === artistQ) score += 10
+  else if (a === hiraganaArtist) score += 10
+  else if (a.includes(artistQ) || artistQ.includes(a)) score += 4
+  else if (hiraganaArtist && (a.includes(hiraganaArtist) || hiraganaArtist.includes(a))) score += 4
+
+  return score
+}
+
+function pickBest(entries: LrclibEntry[], track: string, artist: string, hiraganaArtist: string): LrclibEntry | null {
+  if (!entries.length) return null
+  return entries.reduce((best, e) =>
+    scoreEntry(e, track, artist, hiraganaArtist) >= scoreEntry(best, track, artist, hiraganaArtist) ? e : best
+  )
+}
+
+async function searchLrclib(q: string): Promise<LrclibEntry[]> {
+  const res = await fetch(`${LRCLIB_BASE}/search?${new URLSearchParams({ q })}`, {
+    headers: HEADERS,
+    cache: 'no-store',
+  })
+  if (!res.ok) return []
+  const data = await res.json()
+  return Array.isArray(data) ? data : []
+}
+
 export async function getLyricsFromLrclib(
   track: string,
   artist: string
 ): Promise<LrclibResult | null> {
+  // Convert romaji artist name to hiragana for Japanese databases
+  // e.g. "natori" → "なとり", "atarayo" → "あたらよ"
+  const hiraganaArtist = isRomaji(artist) ? toHiragana(artist).toLowerCase() : ''
+
   // 1. Exact match — fastest, works when Spotify name matches lrclib exactly
   const exactParams = new URLSearchParams({ track_name: track, artist_name: artist })
   const exactRes = await fetch(`${LRCLIB_BASE}/get?${exactParams}`, {
     headers: HEADERS,
     cache: 'no-store',
   })
-
   if (exactRes.ok) {
     const data = await exactRes.json() as LrclibEntry
     const result = entryToResult(data)
     if (result) return result
   }
 
-  // 2. Fuzzy search by track name only — handles cases where Spotify uses a romanised
-  //    artist name (e.g. "atarayo") but lrclib stores the Japanese name (e.g. "あたらよ")
-  const searchParams = new URLSearchParams({ q: track })
-  const searchRes = await fetch(`${LRCLIB_BASE}/search?${searchParams}`, {
-    headers: HEADERS,
-    cache: 'no-store',
-  })
+  // 2. Combined search: "track artist" — lets lrclib match both fields at once.
+  //    Try with hiragana artist first (e.g. "セレナーデ なとり"), then romaji fallback.
+  const combinedQueries = hiraganaArtist
+    ? [`${track} ${hiraganaArtist}`, `${track} ${artist}`]
+    : [`${track} ${artist}`]
 
-  if (!searchRes.ok) return null
+  for (const q of combinedQueries) {
+    const entries = await searchLrclib(q)
+    if (entries.length) {
+      const best = pickBest(entries, track, artist, hiraganaArtist)
+      if (best) {
+        const result = entryToResult(best)
+        if (result) return result
+      }
+    }
+  }
 
-  const entries = await searchRes.json() as LrclibEntry[]
-  if (!Array.isArray(entries) || entries.length === 0) return null
-
-  // Prefer an exact track name match, then fall back to first result
-  const trackLower = track.toLowerCase()
-  const match =
-    entries.find((e) => e.trackName.toLowerCase() === trackLower) ?? entries[0]
-
-  return entryToResult(match)
+  // 3. Track-only fuzzy search — broadest net, scored by artist similarity
+  const entries = await searchLrclib(track)
+  if (!entries.length) return null
+  const best = pickBest(entries, track, artist, hiraganaArtist)
+  return best ? entryToResult(best) : null
 }
