@@ -61,8 +61,9 @@ export async function POST(request: Request) {
     )
     const all = results.flat()
 
-    // Store in cache for future requests
-    if (track && artist) {
+    // Only cache when at least one line has furigana tokens — guards against
+    // saving empty results for non-Japanese content or stale/mismatched lines.
+    if (track && artist && all.some((l) => l.tokens.length > 0)) {
       await setCachedTranslation(track, artist, all, lines)
     }
 
