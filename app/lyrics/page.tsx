@@ -55,8 +55,18 @@ export default function LyricsPage() {
     [lyricsResult, manualLines]
   )
 
+  // Memoized timestamps — same deps as rawLines so they stay stable across re-renders
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const lyricsTimestamps = useMemo(
+    () => activeLyricsResult?.lines.map((l) => l.ms),
+    [lyricsResult, manualLines]
+  )
+
   const { translatedLines, loading: furiganaLoading, error: furiganaError } = useFurigana(
     rawLines, track?.name ?? null, track?.artist ?? null, furiganaBust,
+    activeLyricsResult?.wasRomaji ?? false,
+    lyricsTimestamps,
+    activeLyricsResult?.synced,
   )
   const { addEntry } = useDictionary()
 

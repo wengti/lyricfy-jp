@@ -13,7 +13,8 @@ const schema = z.object({
   lines: z.array(z.string()).min(1),
   track: z.string().optional(),
   artist: z.string().optional(),
-  force: z.boolean().optional(), // bypass cache and overwrite with fresh result
+  force: z.boolean().optional(),    // bypass cache and overwrite with fresh result
+  wasRomaji: z.boolean().optional(), // lyrics were romaji-converted — save as 'manual' to persist
   timestamps: z.array(z.number()).optional(), // ms timestamps from the original synced LRC
   synced: z.boolean().optional(),             // whether the original lyrics were synced
 })
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
   }
 
-  const { lines, track, artist, force, timestamps, synced } = parsed.data
+  const { lines, track, artist, force, wasRomaji, timestamps, synced } = parsed.data
 
   // Force-overwrite is an admin-only action
   if (force) {
@@ -66,11 +67,12 @@ export async function POST(request: Request) {
     // Only cache when at least one line has furigana tokens — guards against
     // saving empty results for non-Japanese content or stale/mismatched lines.
     if (track && artist && all.some((l) => l.tokens.length > 0)) {
+      const saveAsManual = force || wasRomaji
       await setCachedTranslation(
         track, artist, all, lines,
-        force ? 'manual' : 'lrclib',
-        force ? timestamps : undefined,
-        force ? synced : undefined,
+        saveAsManual ? 'manual' : 'lrclib',
+        saveAsManual ? timestamps : undefined,
+        saveAsManual ? synced : undefined,
       )
     }
 

@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getLyricsFromLrclib } from '@/lib/lrclib/client'
 import { getManualCachedLines } from '@/lib/lyricsCache'
-import { detectScript } from '@/lib/utils/japanese'
+import { detectScript, hasJapaneseChars } from '@/lib/utils/japanese'
+import { getUserApiKeys } from '@/lib/getUserApiKeys'
+import { romajiToJapanese } from '@/lib/openrouter/romaji-to-japanese'
 import type { LyricsResult } from '@/types/ai'
 
 export async function GET(request: Request) {
@@ -54,6 +56,33 @@ export async function GET(request: Request) {
   // Detect script
   const rawTexts = result.lines.map((l) => l.text)
   const script = detectScript(rawTexts)
+
+  // If lyrics are all Latin (no kana), ask the AI to identify and convert if romaji Japanese
+  if (script === 'romaji') {
+    try {
+      const keys = await getUserApiKeys()
+      if (keys?.openrouter_api_key) {
+        const convertedTexts = await romajiToJapanese(rawTexts, keys.openrouter_api_key)
+        // If the AI produced Japanese characters, it confirmed the lyrics were romaji
+        if (hasJapaneseChars(convertedTexts.join(' '))) {
+          const convertedLines = convertedTexts.map((text, i) => ({
+            ms: result.lines[i].ms,
+            text,
+          }))
+          return NextResponse.json({
+            lines: convertedLines,
+            synced: result.synced,
+            notFound: false,
+            isJapanese: true,
+            wasRomaji: true,
+            source,
+          } satisfies LyricsResult)
+        }
+      }
+    } catch {
+      // Graceful degradation — fall through to returning isJapanese: false
+    }
+  }
 
   const response: LyricsResult = {
     lines: result.lines,

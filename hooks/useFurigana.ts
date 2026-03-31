@@ -7,7 +7,10 @@ export function useFurigana(
   lines: string[] | null,
   track: string | null,
   artist: string | null,
-  bust = 0  // increment to force a re-fetch and overwrite the cache
+  bust = 0,          // increment to force a re-fetch and overwrite the cache
+  wasRomaji = false, // lyrics were romaji-converted — tells furigana to persist as 'manual'
+  timestamps?: number[], // original ms timestamps (for synced cache storage)
+  synced?: boolean,      // whether original lyrics had LRC timestamps
 ) {
   const [translatedLines, setTranslatedLines] = useState<TranslatedLine[] | null>(null)
   const [loading, setLoading] = useState(false)
@@ -70,7 +73,10 @@ export function useFurigana(
     fetch('/api/ai/furigana', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lines, track, artist, force: effectiveBust > 0 }),
+      body: JSON.stringify({
+        lines, track, artist, force: effectiveBust > 0,
+        ...(wasRomaji ? { wasRomaji: true, timestamps, synced } : {}),
+      }),
     })
       .then((res) => {
         if (!res.ok) return res.json().then((d) => { throw new Error(d.error ?? 'Furigana request failed') })
