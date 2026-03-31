@@ -48,16 +48,15 @@ If the key is missing, `requireApiKey` throws with a user-friendly message: _"No
 | Field | Used by |
 |---|---|
 | `openrouter_api_key` | All AI routes (`/api/ai/*`) |
-| `spotify_client_id` | Spotify OAuth + token refresh |
-| `spotify_client_secret` | Spotify OAuth + token refresh |
-| `genius_access_token` | Genius lyrics fallback |
 
-### Environment variables (only these three remain)
+### Environment variables
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 NEXT_PUBLIC_APP_URL=          # used for Spotify redirect URI
+SPOTIFY_CLIENT_ID=            # Spotify OAuth
+SPOTIFY_CLIENT_SECRET=        # Spotify OAuth + token refresh
 ```
 
 ---

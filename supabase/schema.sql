@@ -77,15 +77,13 @@ create trigger trg_dictionary_entries_upd
 
 -- ============================================================
 -- user_api_keys
--- Per-user third-party API keys (OpenRouter, Spotify).
+-- Per-user third-party API keys (OpenRouter).
 -- Keys are never returned unmasked via the API.
 -- ============================================================
 create table public.user_api_keys (
   id                    uuid primary key default gen_random_uuid(),
   user_id               uuid not null references auth.users(id) on delete cascade,
   openrouter_api_key    text,
-  spotify_client_id     text,
-  spotify_client_secret text,
   created_at            timestamptz not null default now(),
   updated_at            timestamptz not null default now(),
   constraint user_api_keys_user_id_unique unique (user_id)
