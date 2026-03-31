@@ -7,7 +7,7 @@ import type { LrcLine, TranslatedLine } from '@/types/ai'
 interface Props {
   lines: LrcLine[]
   synced: boolean
-  source: 'lrclib' | 'genius' | 'manual' | null
+  source: 'lrclib' | 'lrclib-romaji' | 'genius' | 'manual' | null
   translatedLines: TranslatedLine[] | null
   translationsLoading?: boolean
   furiganaError?: string | null
@@ -20,6 +20,10 @@ const SOURCE_BADGE: Record<string, Record<string, { label: string; title: string
   lrclib: {
     synced:   { label: 'lrclib.net · synced',   title: 'Timestamps available — karaoke active',          cls: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' },
     unsynced: { label: 'lrclib.net · no timestamps', title: 'lrclib has this song but without timestamps — karaoke unavailable', cls: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800' },
+  },
+  'lrclib-romaji': {
+    synced:   { label: 'lrclib.net · romaji · synced',   title: 'Romanized lyrics converted to Japanese — karaoke active',    cls: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' },
+    unsynced: { label: 'lrclib.net · romaji · unsynced', title: 'Romanized lyrics converted to Japanese — karaoke unavailable', cls: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800' },
   },
   manual: {
     unsynced: { label: 'Manual · unsynced', title: 'Manually pasted lyrics have no timestamps — karaoke unavailable', cls: 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700' },

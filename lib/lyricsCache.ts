@@ -13,7 +13,7 @@ function hashLines(lines: string[]): string {
 interface CacheEntry {
   linesHash: string
   lines: TranslatedLine[]
-  source?: 'manual' | 'lrclib'
+  source?: 'manual' | 'lrclib' | 'lrclib-romaji'
   timestamps?: number[] // ms timestamps from the original synced LRC, only stored for manual entries
   synced?: boolean      // whether the original lyrics had LRC timestamps
 }
@@ -51,7 +51,7 @@ export async function getCachedTranslation(
 export async function getManualCachedLines(
   track: string,
   artist: string
-): Promise<{ lines: LrcLine[]; synced: boolean } | null> {
+): Promise<{ lines: LrcLine[]; synced: boolean; wasRomaji: boolean } | null> {
   const supabase = createAdminClient()
   const { data } = await supabase
     .from('lyrics_cache')
@@ -67,14 +67,14 @@ export async function getManualCachedLines(
   // Legacy format (plain array, no source) — treat as manual (created before source tracking)
   if (Array.isArray(entry)) {
     const lines = reconstructLines(entry as TranslatedLine[])
-    return lines ? { lines, synced: false } : null
+    return lines ? { lines, synced: false, wasRomaji: false } : null
   }
 
   // Only return lines if explicitly manual; lrclib-sourced entries should defer to lrclib
   if (entry.source === 'lrclib') return null
 
   const lines = reconstructLines(entry.lines ?? [], entry.timestamps)
-  return lines ? { lines, synced: entry.synced ?? false } : null
+  return lines ? { lines, synced: entry.synced ?? false, wasRomaji: entry.source === 'lrclib-romaji' } : null
 }
 
 function reconstructLines(cached: TranslatedLine[], timestamps?: number[]): LrcLine[] | null {
@@ -95,7 +95,7 @@ export async function setCachedTranslation(
   artist: string,
   lines: TranslatedLine[],
   sourceLines: string[],
-  source: 'manual' | 'lrclib' = 'lrclib',
+  source: 'manual' | 'lrclib' | 'lrclib-romaji' = 'lrclib',
   timestamps?: number[],
   synced?: boolean
 ): Promise<void> {

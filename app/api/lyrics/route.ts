@@ -31,8 +31,8 @@ export async function GET(request: Request) {
       synced: manualResult.synced,
       notFound: false,
       isJapanese: true,
-      wasRomaji: false,
-      source: 'manual',
+      wasRomaji: manualResult.wasRomaji,
+      source: manualResult.wasRomaji ? 'lrclib-romaji' : 'manual',
     }
     return NextResponse.json(response)
   }
@@ -75,7 +75,7 @@ export async function GET(request: Request) {
             notFound: false,
             isJapanese: true,
             wasRomaji: true,
-            source,
+            source: 'lrclib-romaji',
           } satisfies LyricsResult)
         }
       }

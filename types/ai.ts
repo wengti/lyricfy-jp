@@ -31,5 +31,5 @@ export interface LyricsResult {
   notFound: boolean  // true = lrclib did not find the song
   isJapanese: boolean
   wasRomaji: boolean // true = lyrics were romaji, converted by AI
-  source: 'lrclib' | 'manual' | null
+  source: 'lrclib' | 'lrclib-romaji' | 'manual' | null
 }
