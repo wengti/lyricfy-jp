@@ -33,7 +33,7 @@ export default function ManualLyricsInput({ onSubmit, heading = 'Lyrics not foun
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={10}
-          placeholder="Paste Japanese lyrics here, one line per row…"
+          placeholder="Paste lyrics here, one line per row… Japanese preferred (e.g. 好きすぎたから愛せなかった). Romaji also accepted but may reduce accuracy."
           className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:ring-indigo-800"
         />
         <button
