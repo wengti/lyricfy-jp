@@ -57,14 +57,14 @@ export async function POST(request: Request) {
       batches.push(lines.slice(i, i + BATCH_SIZE))
     }
     const results = await Promise.all(
-      batches.map((batch) => generateFuriganaAndTranslations(batch, apiKey))
+      batches.map((batch) => generateFuriganaAndTranslations(batch, apiKey, force))
     )
     const all = results.flat()
 
     // Only cache when at least one line has furigana tokens — guards against
     // saving empty results for non-Japanese content or stale/mismatched lines.
     if (track && artist && all.some((l) => l.tokens.length > 0)) {
-      await setCachedTranslation(track, artist, all, lines)
+      await setCachedTranslation(track, artist, all, lines, force ? 'manual' : 'lrclib')
     }
 
     return NextResponse.json({ lines: all })

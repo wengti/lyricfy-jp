@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getLyricsFromLrclib } from '@/lib/lrclib/client'
-import { reconstructLinesFromCache } from '@/lib/lyricsCache'
+import { getManualCachedLines } from '@/lib/lyricsCache'
 import { detectScript } from '@/lib/utils/japanese'
 import type { LyricsResult } from '@/types/ai'
 
@@ -18,26 +18,28 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'track and artist are required' }, { status: 400 })
   }
 
+  // Check Supabase for manually-pasted/re-translated lyrics first.
+  // This bypasses lrclib entirely so admin corrections aren't overridden by
+  // lrclib's (potentially longer/different) line set, which would cause
+  // untranslated lines to appear at the end of the song for non-admin users.
+  const manualLines = await getManualCachedLines(track, artist)
+  if (manualLines) {
+    const response: LyricsResult = {
+      lines: manualLines,
+      synced: false,
+      notFound: false,
+      isJapanese: true,
+      wasRomaji: false,
+      source: 'manual',
+    }
+    return NextResponse.json(response)
+  }
+
   // Try lrclib.net (free, no key required)
   const result = await getLyricsFromLrclib(track, artist)
   const source: LyricsResult['source'] = result ? 'lrclib' : null
 
-  // lrclib found nothing — check Supabase cache before declaring not found.
-  // Covers songs where an admin previously pasted and translated lyrics manually.
   if (!result) {
-    const cachedLines = await reconstructLinesFromCache(track, artist)
-    if (cachedLines) {
-      const response: LyricsResult = {
-        lines: cachedLines,
-        synced: false,
-        notFound: false,
-        isJapanese: true,
-        wasRomaji: false,
-        source: 'manual',
-      }
-      return NextResponse.json(response)
-    }
-
     const response: LyricsResult = {
       lines: [],
       synced: false,

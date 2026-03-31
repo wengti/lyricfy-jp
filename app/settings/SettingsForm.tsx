@@ -134,7 +134,6 @@ export default function SettingsForm({ savedKeys }: Props) {
                 </p>
                 <p>
                   An API key is only needed to translate a song that <strong className="text-gray-800 dark:text-gray-200">no one has played before</strong>.
-                  If you mostly listen to popular Japanese songs, chances are the cache already has them covered.
                 </p>
               </div>
             </div>

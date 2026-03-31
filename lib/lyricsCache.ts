@@ -13,6 +13,7 @@ function hashLines(lines: string[]): string {
 interface CacheEntry {
   linesHash: string
   lines: TranslatedLine[]
+  source?: 'manual' | 'lrclib'
 }
 
 export async function getCachedTranslation(
@@ -38,22 +39,44 @@ export async function getCachedTranslation(
 }
 
 /**
- * Reconstructs raw LrcLines from a cached translation entry.
- * Used when lrclib has no lyrics for a song but an admin previously
- * pasted and translated them — the stored tokens carry the original text.
- * Returns null if no cache entry exists for this track/artist.
+ * Returns reconstructed LrcLines only when the cache entry was written from
+ * manually-pasted/re-translated lyrics (source === 'manual', or legacy entries
+ * without a source tag which were also created from manual pastes).
+ * Returns null for lrclib-sourced cache entries or when no entry exists.
+ * Used by the lyrics route to bypass lrclib when the admin has already
+ * provided correct lyrics for this track.
  */
-export async function reconstructLinesFromCache(
+export async function getManualCachedLines(
   track: string,
   artist: string
 ): Promise<LrcLine[] | null> {
-  const cached = await getCachedTranslation(track, artist)
-  if (!cached) return null
+  const supabase = createAdminClient()
+  const { data } = await supabase
+    .from('lyrics_cache')
+    .select('translated_lines')
+    .eq('track_name', normalise(track))
+    .eq('artist', normalise(artist))
+    .maybeSingle()
 
+  if (!data) return null
+
+  const entry = data.translated_lines as CacheEntry | TranslatedLine[]
+
+  // Legacy format (plain array, no source) — treat as manual (created before source tracking)
+  if (Array.isArray(entry)) {
+    return reconstructLines(entry as TranslatedLine[])
+  }
+
+  // Only return lines if explicitly manual; lrclib-sourced entries should defer to lrclib
+  if (entry.source === 'lrclib') return null
+
+  return reconstructLines(entry.lines ?? [])
+}
+
+function reconstructLines(cached: TranslatedLine[]): LrcLine[] | null {
   const lines = cached
     .map((line) => ({
       ms: 0,
-      // Japanese lines: rebuild from tokens. Non-Japanese (empty tokens): use translation text.
       text: line.tokens.length > 0
         ? line.tokens.map((t) => t.original).join('')
         : line.translation,
@@ -67,12 +90,14 @@ export async function setCachedTranslation(
   track: string,
   artist: string,
   lines: TranslatedLine[],
-  sourceLines: string[]
+  sourceLines: string[],
+  source: 'manual' | 'lrclib' = 'lrclib'
 ): Promise<void> {
   const supabase = createAdminClient()
   const entry: CacheEntry = {
     linesHash: hashLines(sourceLines),
     lines,
+    source,
   }
   await supabase.from('lyrics_cache').upsert(
     {
