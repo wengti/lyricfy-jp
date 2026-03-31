@@ -16,13 +16,6 @@ const schema = z.object({
 })
 
 export async function POST(request: Request) {
-  let apiKey: string
-  try {
-    apiKey = await requireApiKey('openrouter_api_key', 'OpenRouter API Key')
-  } catch (e) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 422 })
-  }
-
   const body = await request.json()
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
@@ -31,12 +24,20 @@ export async function POST(request: Request) {
 
   const { lines, track, artist, force } = parsed.data
 
-  // Check Supabase cache first (skipped when force=true)
+  // Check Supabase cache first (skipped when force=true) — no API key needed
   if (!force && track && artist) {
     const cached = await getCachedTranslation(track, artist, lines)
     if (cached) {
       return NextResponse.json({ lines: cached })
     }
+  }
+
+  // Cache miss — need the user's API key to call the AI
+  let apiKey: string
+  try {
+    apiKey = await requireApiKey('openrouter_api_key', 'OpenRouter API Key')
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 422 })
   }
 
   // Process batches in parallel — faster for songs with multiple batches
