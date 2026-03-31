@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Minus } from 'lucide-react'
+import { Plus, Minus, KeyRound } from 'lucide-react'
 
 interface Step {
   heading: string
@@ -23,7 +23,10 @@ export default function TutorialAccordion({ service, steps }: Props) {
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
       >
-        <span>How to get your {service} key</span>
+        <span className="flex items-center gap-2">
+          <KeyRound size={15} className="text-indigo-500" />
+          How to get your {service} key
+        </span>
         {open
           ? <Minus size={16} className="text-gray-400 dark:text-gray-500" />
           : <Plus size={16} className="text-gray-400 dark:text-gray-500" />
