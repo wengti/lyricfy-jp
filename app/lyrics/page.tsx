@@ -37,6 +37,7 @@ export default function LyricsPage() {
   const [syncedUpgrade, setSyncedUpgrade] = useState<{ lines: LrcLine[] } | null>(null)
   const [acceptingUpgrade, setAcceptingUpgrade] = useState(false)
   const [upgradedSyncLines, setUpgradedSyncLines] = useState<LrcLine[] | null>(null)
+  const [lrclibChecked, setLrclibChecked] = useState(false)
 
   const track = playing?.track ?? null
   const { result: lyricsResult, loading: lyricsLoading, invalidate: invalidateLyrics } = useLyrics(
@@ -95,6 +96,7 @@ export default function LyricsPage() {
     setOverrideTranslations(null)
     setSyncedUpgrade(null)
     setUpgradedSyncLines(null)
+    setLrclibChecked(false)
   }, [track?.id])
 
   // Disable auto-scroll when user manually scrolls
@@ -134,7 +136,10 @@ export default function LyricsPage() {
     const params = new URLSearchParams({ track: track.name, artist: track.artist })
     fetch(`/api/lyrics/check-synced?${params}`, { signal: controller.signal })
       .then((r) => r.json())
-      .then((d) => { if (d.hasSynced) setSyncedUpgrade({ lines: d.lines }) })
+      .then((d) => {
+        if (d.hasSynced) setSyncedUpgrade({ lines: d.lines })
+        setLrclibChecked(true)
+      })
       .catch(() => {})
 
     return () => controller.abort()
@@ -165,6 +170,7 @@ export default function LyricsPage() {
         setOverrideTranslations(data.lines as TranslatedLine[])
         setUpgradedSyncLines(syncedUpgrade.lines)
         setSyncedUpgrade(null)
+        setLrclibChecked(false)
         invalidateLyrics(track.name, track.artist)
       }
     } finally {
@@ -384,9 +390,9 @@ export default function LyricsPage() {
       )}
 
       {/* Synced upgrade banner */}
-      {syncedUpgrade && track?.name && track?.artist && (
+      {(syncedUpgrade || lrclibChecked) && track?.name && track?.artist && (
         <SyncedVersionBanner
-          lines={syncedUpgrade.lines}
+          lines={syncedUpgrade?.lines}
           isAdmin={isAdmin ?? false}
           onAccept={handleAcceptUpgrade}
           accepting={acceptingUpgrade}
