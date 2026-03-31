@@ -32,9 +32,9 @@ export async function getCachedTranslation(
 
   const entry = data.translated_lines as CacheEntry | TranslatedLine[]
 
-  // Legacy format (plain array without hash) — treat as cache miss so it
-  // gets regenerated and re-saved with the new format.
-  if (Array.isArray(entry)) return null
+  // Legacy format (plain array without hash) — return as-is rather than
+  // discarding it and forcing a re-translation.
+  if (Array.isArray(entry)) return entry as TranslatedLine[]
 
   // Validate that the cache was built from the same source lines.
   // A mismatch means the cache holds a manual replacement (or vice versa).
