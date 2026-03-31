@@ -13,7 +13,7 @@ import NowPlayingBanner from '@/components/lyrics/NowPlayingBanner'
 import LyricsDisplay from '@/components/lyrics/LyricsDisplay'
 import ManualLyricsInput from '@/components/lyrics/ManualLyricsInput'
 import SaveToDictionaryModal from '@/components/lyrics/SaveToDictionaryModal'
-import type { LrcLine } from '@/types/ai'
+import type { LrcLine, TranslatedLine } from '@/types/ai'
 
 export default function LyricsPage() {
   const searchParams = useSearchParams()
@@ -25,6 +25,8 @@ export default function LyricsPage() {
   const [manualLines, setManualLines] = useState<LrcLine[] | null>(null)
   const [furiganaBust, setFuriganaBust] = useState(0)
   const [showReplace, setShowReplace] = useState(false)
+  const [retranslating, setRetranslating] = useState(false)
+  const [overrideTranslations, setOverrideTranslations] = useState<TranslatedLine[] | null>(null)
   const [romajiConverting, setRomajiConverting] = useState(false)
   const conversionControllerRef = useRef<AbortController | null>(null)
   // Persists manually pasted lyrics per track so they survive song switches
@@ -53,17 +55,8 @@ export default function LyricsPage() {
     [lyricsResult, manualLines]
   )
 
-  // Timestamps forwarded to the furigana API on re-translate so synced lyrics
-  // remain synced after the cache is overwritten with a manual entry.
-  const rawTimestamps = useMemo(
-    () => activeLyricsResult?.isJapanese ? activeLyricsResult.lines.map((l) => l.ms) : null,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [lyricsResult, manualLines]
-  )
-
   const { translatedLines, loading: furiganaLoading, error: furiganaError } = useFurigana(
-    rawLines, track?.name ?? null, track?.artist ?? null,
-    furiganaBust, rawTimestamps, activeLyricsResult?.synced ?? false,
+    rawLines, track?.name ?? null, track?.artist ?? null, furiganaBust,
   )
   const { addEntry } = useDictionary()
 
@@ -77,6 +70,8 @@ export default function LyricsPage() {
     setFuriganaBust(0)
     setShowReplace(false)
     setAutoScroll(true)
+    setRetranslating(false)
+    setOverrideTranslations(null)
   }, [track?.id])
 
   // Disable auto-scroll when user manually scrolls
@@ -102,29 +97,29 @@ export default function LyricsPage() {
 
   const progressMs = playing?.progressMs ?? 0
 
-  function handleRetranslate() {
-    if (!activeLyricsResult) return
-
-    // If manual lines are already in state, use them as-is.
-    // Otherwise reconstruct the source text from the displayed translation so
-    // we re-process the correct (admin-corrected) lines, not whatever lrclib returned.
-    if (!manualLines && translatedLines) {
-      const reconstructed: LrcLine[] = translatedLines
-        .map((line, i) => ({
-          ms: activeLyricsResult.lines[i]?.ms ?? 0,
-          text: line.tokens.length > 0
-            ? line.tokens.map((t) => t.original).join('')
-            : line.translation,
-        }))
-        .filter((l) => l.text.trim())
-
-      if (reconstructed.length > 0) {
-        if (track?.id) manualLinesMap.current.set(track.id, reconstructed)
-        setManualLines(reconstructed)
+  async function handleRetranslate() {
+    if (!activeLyricsResult || !track || !rawLines || rawLines.length === 0) return
+    setRetranslating(true)
+    try {
+      const res = await fetch('/api/ai/furigana', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lines: rawLines,
+          track: track.name,
+          artist: track.artist,
+          force: true,
+          timestamps: activeLyricsResult.lines.map((l) => l.ms),
+          synced: activeLyricsResult.synced,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setOverrideTranslations(data.lines as TranslatedLine[])
       }
+    } finally {
+      setRetranslating(false)
     }
-
-    setFuriganaBust((b) => b + 1)
   }
 
   function cancelManualSubmit() {
@@ -266,10 +261,10 @@ export default function LyricsPage() {
         <div className="mb-4 flex items-center justify-end gap-4">
           <button
             onClick={handleRetranslate}
-            disabled={furiganaLoading}
+            disabled={retranslating}
             className="text-xs text-gray-400 underline hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-500 dark:hover:text-gray-300"
           >
-            {furiganaLoading ? 'Translating…' : 'Re-translate'}
+            {retranslating ? 'Translating…' : 'Re-translate'}
           </button>
           <button
             onClick={() => setShowReplace(true)}
@@ -319,7 +314,7 @@ export default function LyricsPage() {
           lines={activeLyricsResult.lines}
           synced={activeLyricsResult.synced}
           source={activeLyricsResult.source ?? null}
-          translatedLines={activeLyricsResult.isJapanese ? translatedLines : null}
+          translatedLines={activeLyricsResult.isJapanese ? (overrideTranslations ?? translatedLines) : null}
           translationsLoading={activeLyricsResult.isJapanese && furiganaLoading}
           furiganaError={activeLyricsResult.isJapanese ? furiganaError : null}
           progressMs={progressMs}
