@@ -58,6 +58,7 @@ ${japaneseLines.map((l, i) => `${i + 1}. ${l}`).join('\n')}`
     ],
     temperature: 0.1,
     maxTokens: 8192,
+    jsonMode: true,
   })
 
   const jsonMatch = content.match(/\{[\s\S]*\}/)
