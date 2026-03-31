@@ -75,11 +75,14 @@ ${japaneseLines.map((l, i) => `${i + 1}. ${l}`).join('\n')}`
     }))
 
     // Verify the tokens faithfully reconstruct the original line.
-    // If they don't (truncated, skipped, or altered by the model), fall back to
-    // empty tokens so LyricsLine shows the raw text instead of corrupted output.
-    const normalize = (s: string) => s.replace(/\s+/g, '')
-    const reconstructed = normalize(tokens.map((t) => t.original).join(''))
-    const validTokens = reconstructed === normalize(japaneseLines[batchIndex]) ? tokens : []
+    // Compare only Japanese characters (kana + kanji) — this ignores punctuation
+    // differences where the model substitutes Japanese marks (、。！？) with ASCII
+    // equivalents (, . ! ?) in its JSON output, which would otherwise cause every
+    // line with punctuation to fail and lose all furigana.
+    const japaneseOnly = (s: string) =>
+      s.replace(/[^\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]/g, '')
+    const reconstructed = japaneseOnly(tokens.map((t) => t.original).join(''))
+    const validTokens = reconstructed === japaneseOnly(japaneseLines[batchIndex]) ? tokens : []
 
     results[originalIndex] = {
       tokens: validTokens,
