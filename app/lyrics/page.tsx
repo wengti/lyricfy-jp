@@ -7,6 +7,7 @@ import { useNowPlaying } from '@/hooks/useNowPlaying'
 import { useLyrics } from '@/hooks/useLyrics'
 import { useFurigana } from '@/hooks/useFurigana'
 import { useDictionary } from '@/hooks/useDictionary'
+import { detectScript } from '@/lib/utils/japanese'
 import NowPlayingBanner from '@/components/lyrics/NowPlayingBanner'
 import LyricsDisplay from '@/components/lyrics/LyricsDisplay'
 import ManualLyricsInput from '@/components/lyrics/ManualLyricsInput'
@@ -23,6 +24,7 @@ export default function LyricsPage() {
   const [manualLines, setManualLines] = useState<LrcLine[] | null>(null)
   const [furiganaBust, setFuriganaBust] = useState(0)
   const [showReplace, setShowReplace] = useState(false)
+  const [romajiConverting, setRomajiConverting] = useState(false)
   const [selectedPhrase, setSelectedPhrase] = useState<string | null>(null)
   const [autoScroll, setAutoScroll] = useState(true)
 
@@ -86,6 +88,36 @@ export default function LyricsPage() {
   }, [])
 
   const progressMs = playing?.progressMs ?? 0
+
+  async function handleManualSubmit(lines: LrcLine[]) {
+    const texts = lines.map((l) => l.text)
+    if (detectScript(texts) === 'romaji') {
+      setRomajiConverting(true)
+      try {
+        const res = await fetch('/api/ai/romaji-to-japanese', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lines: texts }),
+        })
+        if (!res.ok) throw new Error('Romaji conversion failed')
+        const data = await res.json()
+        const converted: LrcLine[] = (data.lines as string[]).map((text, i) => ({
+          ms: lines[i].ms,
+          text,
+        }))
+        setManualLines(converted)
+      } catch {
+        // Fall back to original lines if conversion fails
+        setManualLines(lines)
+      } finally {
+        setRomajiConverting(false)
+      }
+    } else {
+      setManualLines(lines)
+    }
+    setFuriganaBust((b) => b + 1)
+    setShowReplace(false)
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
@@ -153,7 +185,7 @@ export default function LyricsPage() {
 
       {/* Lyrics not found */}
       {activeLyricsResult?.notFound && !manualLines && (
-        <ManualLyricsInput onSubmit={(lines) => { setManualLines(lines); setFuriganaBust((b) => b + 1) }} />
+        <ManualLyricsInput onSubmit={handleManualSubmit} />
       )}
 
       {/* Replace lyrics — shown when lrclib found something but it may be wrong */}
@@ -171,7 +203,7 @@ export default function LyricsPage() {
         <div className="mb-6">
           <ManualLyricsInput
             heading="Paste the correct lyrics below"
-            onSubmit={(lines) => { setManualLines(lines); setFuriganaBust((b) => b + 1); setShowReplace(false) }}
+            onSubmit={handleManualSubmit}
           />
           <button
             onClick={() => setShowReplace(false)}
@@ -179,6 +211,12 @@ export default function LyricsPage() {
           >
             Cancel
           </button>
+        </div>
+      )}
+
+      {romajiConverting && (
+        <div className="mb-4 py-2 text-center text-sm text-gray-400 animate-pulse dark:text-gray-500">
+          Converting romaji to Japanese…
         </div>
       )}
 
