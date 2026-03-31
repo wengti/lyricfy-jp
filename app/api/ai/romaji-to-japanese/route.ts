@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireApiKey } from '@/lib/getUserApiKeys'
+import { requireAdmin } from '@/lib/requireAdmin'
 import { romajiToJapanese } from '@/lib/openrouter/romaji-to-japanese'
 import { z } from 'zod'
 
@@ -8,6 +9,12 @@ const schema = z.object({
 })
 
 export async function POST(request: Request) {
+  try {
+    await requireAdmin()
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 403 })
+  }
+
   let apiKey: string
   try {
     apiKey = await requireApiKey('openrouter_api_key', 'OpenRouter API Key')

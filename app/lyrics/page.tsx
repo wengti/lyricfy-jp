@@ -22,7 +22,6 @@ export default function LyricsPage() {
   const { connected, playing, loading: spotifyLoading } = useNowPlaying()
   const [manualLines, setManualLines] = useState<LrcLine[] | null>(null)
   const [furiganaBust, setFuriganaBust] = useState(0)
-  const [showReplace, setShowReplace] = useState(false)
   const [romajiConverting, setRomajiConverting] = useState(false)
   const conversionControllerRef = useRef<AbortController | null>(null)
   // Persists manually pasted lyrics per track so they survive song switches
@@ -62,7 +61,6 @@ export default function LyricsPage() {
     const stored = track?.id ? (manualLinesMap.current.get(track.id) ?? null) : null
     setManualLines(stored)
     setFuriganaBust(0)
-    setShowReplace(false)
     setAutoScroll(true)
   }, [track?.id])
 
@@ -88,13 +86,6 @@ export default function LyricsPage() {
   }, [])
 
   const progressMs = playing?.progressMs ?? 0
-
-  function cancelManualSubmit() {
-    conversionControllerRef.current?.abort()
-    conversionControllerRef.current = null
-    setRomajiConverting(false)
-    setShowReplace(false)
-  }
 
   async function handleManualSubmit(lines: LrcLine[]) {
     // Abort any previous in-flight conversion
@@ -137,7 +128,6 @@ export default function LyricsPage() {
     }
     if (controller.signal.aborted) return
     setFuriganaBust((b) => b + 1)
-    setShowReplace(false)
   }
 
   return (
@@ -209,29 +199,18 @@ export default function LyricsPage() {
         <ManualLyricsInput onSubmit={handleManualSubmit} />
       )}
 
-      {/* Replace lyrics — shown when lrclib found something but it may be wrong */}
-      {activeLyricsResult && !activeLyricsResult.notFound && !showReplace && (
+      {/* Replace lyrics — admins only; non-admins see a contact prompt */}
+      {activeLyricsResult && !activeLyricsResult.notFound && (
         <div className="mb-4 flex justify-end">
-          <button
-            onClick={() => setShowReplace(true)}
-            className="text-xs text-gray-400 underline hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-          >
-            Wrong lyrics? Replace them
-          </button>
-        </div>
-      )}
-      {showReplace && (
-        <div className="mb-6">
-          <ManualLyricsInput
-            heading="Paste the correct lyrics below"
-            onSubmit={handleManualSubmit}
-          />
-          <button
-            onClick={cancelManualSubmit}
-            className="mt-2 text-xs text-gray-400 underline hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-          >
-            Cancel
-          </button>
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            Wrong lyrics?{' '}
+            <a
+              href="mailto:wengti@hotmail.com"
+              className="underline hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              Contact the admin
+            </a>
+          </p>
         </div>
       )}
 

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 export const maxDuration = 120 // seconds — AI calls can be slow for long songs
 import { requireApiKey } from '@/lib/getUserApiKeys'
+import { requireAdmin } from '@/lib/requireAdmin'
 import { generateFuriganaAndTranslations } from '@/lib/openrouter/furigana'
 import { getCachedTranslation, setCachedTranslation } from '@/lib/lyricsCache'
 import { z } from 'zod'
@@ -23,6 +24,15 @@ export async function POST(request: Request) {
   }
 
   const { lines, track, artist, force } = parsed.data
+
+  // Force-overwrite is an admin-only action
+  if (force) {
+    try {
+      await requireAdmin()
+    } catch (e) {
+      return NextResponse.json({ error: (e as Error).message }, { status: 403 })
+    }
+  }
 
   // Check Supabase cache first (skipped when force=true) — no API key needed
   if (!force && track && artist) {
