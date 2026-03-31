@@ -1,5 +1,5 @@
 const OPENROUTER_BASE = 'https://openrouter.ai/api/v1'
-const MODEL = 'google/gemma-3-27b-it'
+const MODEL = 'google/gemini-2.0-flash-001'
 
 interface OpenRouterMessage {
   role: 'user' | 'assistant' | 'system'
@@ -10,6 +10,7 @@ interface OpenRouterOptions {
   apiKey: string
   messages: OpenRouterMessage[]
   temperature?: number
+  maxTokens?: number
 }
 
 const RETRY_DELAYS_MS = [2000, 5000, 10000]
@@ -20,12 +21,13 @@ const RETRY_DELAYS_MS = [2000, 5000, 10000]
  * Retries automatically on 429 rate-limit responses.
  */
 export async function openRouterChat(options: OpenRouterOptions): Promise<string> {
-  const { apiKey, messages, temperature = 0.3 } = options
+  const { apiKey, messages, temperature = 0.3, maxTokens } = options
 
   const body: Record<string, unknown> = {
     model: MODEL,
     messages,
     temperature,
+    ...(maxTokens !== undefined && { max_tokens: maxTokens }),
   }
 
   const headers = {
