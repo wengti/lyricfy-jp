@@ -66,11 +66,21 @@ ${japaneseLines.map((l, i) => `${i + 1}. ${l}`).join('\n')}`
 
   // Merge model results back into their original positions
   japaneseIndices.forEach((originalIndex, batchIndex) => {
+    const raw = parsed.furigana[batchIndex] ?? []
+    const tokens: FuriganaToken[] = raw.map((t) => ({
+      original: t.original,
+      reading: t.reading ?? null,
+    }))
+
+    // Verify the tokens faithfully reconstruct the original line.
+    // If they don't (truncated, skipped, or altered by the model), fall back to
+    // empty tokens so LyricsLine shows the raw text instead of corrupted output.
+    const normalize = (s: string) => s.trim().replace(/\s+/g, ' ')
+    const reconstructed = normalize(tokens.map((t) => t.original).join(''))
+    const validTokens = reconstructed === normalize(japaneseLines[batchIndex]) ? tokens : []
+
     results[originalIndex] = {
-      tokens: (parsed.furigana[batchIndex] ?? []).map((t) => ({
-        original: t.original,
-        reading: t.reading ?? null,
-      })) as FuriganaToken[],
+      tokens: validTokens,
       translation: parsed.translations[batchIndex] ?? '',
     }
   })
