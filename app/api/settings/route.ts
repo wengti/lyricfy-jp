@@ -5,7 +5,6 @@ import { z } from 'zod'
 
 const updateSchema = z.object({
   openrouter_api_key: z.string().max(512).optional(),
-  genius_access_token: z.string().max(512).optional(),
 })
 
 export async function GET() {
@@ -15,7 +14,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('user_api_keys')
-    .select('openrouter_api_key, genius_access_token, updated_at')
+    .select('openrouter_api_key, updated_at')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -25,7 +24,6 @@ export async function GET() {
   return NextResponse.json({
     keys: {
       openrouter_api_key: maskKey(data.openrouter_api_key),
-      genius_access_token: maskKey(data.genius_access_token),
       updated_at: data.updated_at,
     },
   })

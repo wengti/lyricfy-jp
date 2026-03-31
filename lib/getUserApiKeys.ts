@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 
 export type UserApiKeys = {
   openrouter_api_key: string | null
-  genius_access_token: string | null
 }
 
 /**
@@ -21,7 +20,7 @@ export async function getUserApiKeys(): Promise<UserApiKeys | null> {
 
   const { data, error } = await supabase
     .from('user_api_keys')
-    .select('openrouter_api_key, genius_access_token')
+    .select('openrouter_api_key')
     .eq('user_id', user.id)
     .maybeSingle()
 

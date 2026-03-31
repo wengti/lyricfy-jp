@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getLyricsFromLrclib } from '@/lib/lrclib/client'
-import { searchGenius, scrapeGeniusLyrics } from '@/lib/genius/scraper'
-import { getUserApiKeys } from '@/lib/getUserApiKeys'
 import { detectScript } from '@/lib/utils/japanese'
 import type { LyricsResult } from '@/types/ai'
 
@@ -19,26 +17,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'track and artist are required' }, { status: 400 })
   }
 
-  // 1. Try lrclib.net (free, no key required)
-  let result = await getLyricsFromLrclib(track, artist)
-  let source: LyricsResult['source'] = result ? 'lrclib' : null
+  // Try lrclib.net (free, no key required)
+  const result = await getLyricsFromLrclib(track, artist)
+  const source: LyricsResult['source'] = result ? 'lrclib' : null
 
-  // 2. Genius fallback
-  if (!result) {
-    const keys = await getUserApiKeys()
-    if (keys?.genius_access_token) {
-      const song = await searchGenius(track, artist, keys.genius_access_token)
-      if (song?.url) {
-        const lines = await scrapeGeniusLyrics(song.url)
-        if (lines && lines.length > 0) {
-          result = { lines, synced: false }
-          source = 'genius'
-        }
-      }
-    }
-  }
-
-  // 3. Not found
+  // Not found
   if (!result) {
     const response: LyricsResult = {
       lines: [],

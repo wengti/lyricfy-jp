@@ -15,12 +15,6 @@ const OPENROUTER_STEPS = [
   { heading: 'Paste the key into the field below and click Save.', body: null },
 ]
 
-const GENIUS_STEPS = [
-  { heading: 'Go to genius.com/api-clients and sign in or create a free account.', body: null },
-  { heading: 'Click New API Client. Fill in any app name and homepage URL.', body: null },
-  { heading: 'Click Generate Access Token. Copy the token and paste it below.', body: null },
-]
-
 interface Props {
   savedKeys: MaskedApiKeys | null
   appUrl: string
@@ -29,7 +23,6 @@ interface Props {
 export default function SettingsForm({ savedKeys }: Props) {
   const [form, setForm] = useState({
     openrouter_api_key: '',
-    genius_access_token: '',
   })
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -54,8 +47,7 @@ export default function SettingsForm({ savedKeys }: Props) {
         throw new Error(data.error ?? 'Save failed')
       }
       setStatus('success')
-      // Clear form fields after save — saved values are shown via placeholder
-      setForm({ openrouter_api_key: '', genius_access_token: '' })
+      setForm({ openrouter_api_key: '' })
       setTimeout(() => setStatus('idle'), 3000)
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : 'Save failed')
@@ -88,23 +80,6 @@ export default function SettingsForm({ savedKeys }: Props) {
           savedValue={savedKeys?.openrouter_api_key ?? null}
           onChange={(v) => setField('openrouter_api_key', v)}
           placeholder="sk-or-v1-..."
-        />
-      </section>
-
-      {/* Genius */}
-      <section>
-        <h2 className="mb-1 text-base font-semibold text-gray-900 dark:text-gray-100">Genius</h2>
-        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-          Used as a fallback lyrics source when lrclib.net doesn&apos;t have a song. Free to use.
-        </p>
-        <TutorialAccordion service="Genius" steps={GENIUS_STEPS} />
-        <ApiKeyInput
-          id="genius_access_token"
-          label="Access Token"
-          value={form.genius_access_token}
-          savedValue={savedKeys?.genius_access_token ?? null}
-          onChange={(v) => setField('genius_access_token', v)}
-          placeholder="Your Genius Access Token"
         />
       </section>
 

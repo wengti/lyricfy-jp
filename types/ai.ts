@@ -28,8 +28,8 @@ export interface LrcLine {
 export interface LyricsResult {
   lines: LrcLine[]
   synced: boolean    // true = has LRC timestamps from lrclib
-  notFound: boolean  // true = both lrclib and Genius failed
+  notFound: boolean  // true = lrclib did not find the song
   isJapanese: boolean
   wasRomaji: boolean // true = lyrics were romaji, converted by AI
-  source: 'lrclib' | 'genius' | 'manual' | null
+  source: 'lrclib' | 'manual' | null
 }

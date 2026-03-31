@@ -13,7 +13,7 @@ process.stdin.on('end', () => {
           'REMINDER: This file is in src/app/api/. ' +
           'Always use requireApiKey() from @/lib/getUserApiKeys instead of process.env ' +
           'for third-party API keys (openrouter_api_key, spotify_client_id, ' +
-          'spotify_client_secret, genius_access_token). ' +
+          'spotify_client_secret). ' +
           'Keys must never be read from process.env in API routes.'
       }
     }));

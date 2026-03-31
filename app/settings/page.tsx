@@ -12,14 +12,13 @@ export default async function SettingsPage() {
 
   const { data } = await supabase
     .from('user_api_keys')
-    .select('openrouter_api_key, genius_access_token, updated_at')
+    .select('openrouter_api_key, updated_at')
     .eq('user_id', user.id)
     .maybeSingle()
 
   const savedKeys = data
     ? {
         openrouter_api_key: maskKey(data.openrouter_api_key),
-        genius_access_token: maskKey(data.genius_access_token),
         updated_at: data.updated_at,
       }
     : null
