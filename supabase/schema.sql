@@ -104,6 +104,41 @@ revoke all on public.user_api_keys from anon;
 grant select, insert, update, delete on public.user_api_keys to authenticated;
 
 -- ============================================================
+-- profiles
+-- One row per user. Holds user-level metadata such as role.
+-- Auto-created on sign-up via trigger on auth.users.
+-- ============================================================
+create table public.profiles (
+  user_id    uuid primary key references auth.users(id) on delete cascade,
+  is_admin   boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.profiles enable row level security;
+
+-- Users can read their own profile (e.g. to gate admin-only UI).
+create policy "own profile read" on public.profiles
+  for select using (auth.uid() = user_id);
+
+-- No write policy for authenticated users — is_admin can only be
+-- set via the Supabase dashboard or the service-role (admin) client.
+
+-- Auto-create a profile row for every new sign-up.
+create or replace function public.handle_new_user()
+returns trigger language plpgsql security definer as $$
+begin
+  insert into public.profiles (user_id)
+  values (new.id)
+  on conflict (user_id) do nothing;
+  return new;
+end;
+$$;
+
+create trigger trg_new_user_profile
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+-- ============================================================
 -- lyrics_cache
 -- Shared cache of AI-generated furigana + translations.
 -- Keyed by track + artist. Written via service role (admin).
