@@ -281,8 +281,16 @@ export default function SaveToDictionaryModal({
               </div>
             )}
 
+            {/* Original phrase */}
+            <div className="mb-3">
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Original phrase</label>
+              <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
+                {phrase}
+              </div>
+            </div>
+
             <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
-              AI found <strong>{breakdownItems.length}</strong> vocab in this phrase. Select which to save — all fields are editable.
+              AI found <strong>{breakdownItems.length}</strong> vocab. Select which to save — all fields are editable.
             </p>
 
             {/* Scrollable card list */}
