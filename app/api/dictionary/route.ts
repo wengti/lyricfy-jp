@@ -65,17 +65,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.issues.map(i => i.message).join(', ') }, { status: 422 })
   }
 
-  const { data: existing } = await supabase
-    .from('dictionary_entries')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('japanese_text', parsed.data.japanese_text)
-    .maybeSingle()
-
-  if (existing) {
-    return NextResponse.json({ entry: existing, skipped: true }, { status: 200 })
-  }
-
   const { data, error } = await supabase
     .from('dictionary_entries')
     .insert({ ...parsed.data, user_id: user.id })
@@ -83,5 +72,5 @@ export async function POST(request: Request) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ entry: data, skipped: false }, { status: 201 })
+  return NextResponse.json({ entry: data }, { status: 201 })
 }

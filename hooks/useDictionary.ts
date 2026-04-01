@@ -50,9 +50,7 @@ export function useDictionary(options: UseDictionaryOptions = {}) {
       throw new Error(err.error ?? 'Failed to add entry')
     }
     const data = await res.json()
-    if (!data.skipped) {
-      setEntries((prev) => [data.entry, ...prev])
-    }
+    setEntries((prev) => [data.entry, ...prev])
     return data.entry
   }
 
