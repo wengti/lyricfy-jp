@@ -312,6 +312,17 @@ export default function SaveToDictionaryModal({
                       className="mt-1 h-4 w-4 rounded border-gray-300 accent-violet-600"
                     />
                     <div className="flex-1 space-y-2">
+                      {/* Furigana preview */}
+                      <div className="pb-1 text-center text-xl">
+                        <ruby>
+                          {item.word}
+                          <rp style={{ userSelect: 'none' }}>(</rp>
+                          <rt className="text-xs font-normal tracking-wide" style={{ userSelect: 'none' }}>
+                            {item.hiragana}
+                          </rt>
+                          <rp style={{ userSelect: 'none' }}>)</rp>
+                        </ruby>
+                      </div>
                       {/* Word + hiragana row */}
                       <div className="flex gap-2">
                         <input
