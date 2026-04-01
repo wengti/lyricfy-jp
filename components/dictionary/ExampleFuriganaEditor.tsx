@@ -137,7 +137,7 @@ export default function ExampleFuriganaEditor({
                       disabled={disabled}
                       placeholder="…"
                       style={{ width: `${Math.max(2.5, ((token.reading?.length ?? 1) + 0.5) * 0.85)}rem` }}
-                      className="rounded border border-gray-300 px-0.5 py-0 text-center text-xs leading-tight text-indigo-600 outline-none focus:border-indigo-400 dark:border-gray-600 dark:bg-gray-700 dark:text-indigo-300"
+                      className="rounded border border-gray-300 px-0.5 py-0 text-center text-base leading-tight text-indigo-600 outline-none focus:border-indigo-400 dark:border-gray-600 dark:bg-gray-700 dark:text-indigo-300"
                     />
                   )}
                 </div>
