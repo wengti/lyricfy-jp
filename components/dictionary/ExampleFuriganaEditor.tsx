@@ -139,7 +139,7 @@ export default function ExampleFuriganaEditor({
                       onChange={(e) => updateReading(i, e.target.value)}
                       disabled={disabled}
                       placeholder="…"
-                      style={{ width: `${Math.max(2.5, ((token.reading?.length ?? 1) + 0.5) * 0.85)}rem` }}
+                      style={{ width: `${Math.max(2.5, ((token.reading?.length ?? 1) + 0.5) * 1.1)}rem` }}
                       className="rounded border border-gray-300 px-0.5 py-0 text-center text-base leading-tight text-indigo-600 outline-none focus:border-indigo-400 dark:border-gray-600 dark:bg-gray-700 dark:text-indigo-300"
                     />
                   )}
