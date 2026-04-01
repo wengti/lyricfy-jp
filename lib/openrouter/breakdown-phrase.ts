@@ -21,7 +21,8 @@ Rules:
      - english_translation: a short, clear English meaning
      - example_japanese: a simple, natural sentence using the word
      - example_english: the English translation of that sentence
-7. Respond with ONLY valid JSON — a single object with a "words" array.`
+7. Also include a top-level "phrase_translation" field with a natural, fluent English translation of the full input phrase.
+8. Respond with ONLY valid JSON — a single object with a "phrase_translation" string and a "words" array.`
 
 const FEW_SHOT_MESSAGES = [
   {
@@ -31,6 +32,7 @@ const FEW_SHOT_MESSAGES = [
   {
     role: 'assistant' as const,
     content: JSON.stringify({
+      phrase_translation: 'Shall we have lunch together?',
       words: [
         {
           word: '昼ご飯',
@@ -63,6 +65,7 @@ const FEW_SHOT_MESSAGES = [
   {
     role: 'assistant' as const,
     content: JSON.stringify({
+      phrase_translation: 'I ended up crying because I like you.',
       words: [
         {
           word: '君',
@@ -95,6 +98,7 @@ const FEW_SHOT_MESSAGES = [
   {
     role: 'assistant' as const,
     content: JSON.stringify({
+      phrase_translation: 'Like a star shining in the night sky.',
       words: [
         {
           word: '夜空',
@@ -122,7 +126,10 @@ const FEW_SHOT_MESSAGES = [
   },
 ]
 
-export async function breakdownPhrase(phrase: string, apiKey: string): Promise<BreakdownWord[]> {
+export async function breakdownPhrase(
+  phrase: string,
+  apiKey: string
+): Promise<{ words: BreakdownWord[]; phraseTranslation: string }> {
   const content = await openRouterChat({
     apiKey,
     messages: [
@@ -134,7 +141,10 @@ export async function breakdownPhrase(phrase: string, apiKey: string): Promise<B
     jsonMode: true,
   })
 
-  const parsed = JSON.parse(content) as { words: BreakdownWord[] }
+  const parsed = JSON.parse(content) as { words: BreakdownWord[]; phrase_translation?: string }
   if (!Array.isArray(parsed.words)) throw new Error('Unexpected AI response format')
-  return parsed.words
+  return {
+    words: parsed.words,
+    phraseTranslation: parsed.phrase_translation ?? '',
+  }
 }

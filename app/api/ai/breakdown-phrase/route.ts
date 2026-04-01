@@ -20,8 +20,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const words = await breakdownPhrase(parsed.data.phrase, apiKey)
-    return NextResponse.json({ words })
+    const result = await breakdownPhrase(parsed.data.phrase, apiKey)
+    return NextResponse.json(result)
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 })
   }

@@ -39,6 +39,7 @@ export default function SaveToDictionaryModal({
   const [mode, setMode] = useState<'single' | 'breakdown'>('single')
   const [breakdownLoading, setBreakdownLoading] = useState(false)
   const [breakdownItems, setBreakdownItems] = useState<BreakdownItem[]>([])
+  const [phraseTranslation, setPhraseTranslation] = useState('')
 
   // Shared
   const [saving, setSaving] = useState(false)
@@ -82,6 +83,7 @@ export default function SaveToDictionaryModal({
       }
       const data = await res.json()
       setBreakdownItems((data.words as BreakdownWord[]).map((w) => ({ ...w, selected: true, enriching: false })))
+      setPhraseTranslation(data.phraseTranslation ?? '')
       setCurrentPage(0)
       setMode('breakdown')
     } catch (e) {
@@ -362,11 +364,14 @@ export default function SaveToDictionaryModal({
                 </div>
               )}
 
-              {/* Original phrase */}
+              {/* Original phrase + translation */}
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Original phrase</label>
-                <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
-                  {phrase}
+                <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-800">
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{phrase}</p>
+                  {phraseTranslation && (
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{phraseTranslation}</p>
+                  )}
                 </div>
               </div>
 
