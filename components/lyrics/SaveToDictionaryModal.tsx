@@ -7,6 +7,7 @@ import type { BreakdownWord } from '@/types/ai'
 
 interface BreakdownItem extends BreakdownWord {
   selected: boolean
+  enriching: boolean
 }
 
 interface Props {
@@ -80,7 +81,7 @@ export default function SaveToDictionaryModal({
         throw new Error(data.error ?? 'Breakdown failed')
       }
       const data = await res.json()
-      setBreakdownItems((data.words as BreakdownWord[]).map((w) => ({ ...w, selected: true })))
+      setBreakdownItems((data.words as BreakdownWord[]).map((w) => ({ ...w, selected: true, enriching: false })))
       setMode('breakdown')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Breakdown failed')
@@ -93,6 +94,40 @@ export default function SaveToDictionaryModal({
     setBreakdownItems((prev) =>
       prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
     )
+  }
+
+  async function enrichItem(index: number, word: string) {
+    if (!word.trim()) return
+    setBreakdownItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, enriching: true } : item))
+    )
+    try {
+      const res = await fetch('/api/ai/enrich-word', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word }),
+      })
+      if (!res.ok) throw new Error('Enrichment failed')
+      const data = await res.json()
+      setBreakdownItems((prev) =>
+        prev.map((item, i) =>
+          i === index
+            ? {
+                ...item,
+                hiragana: data.hiragana ?? item.hiragana,
+                english_translation: data.english_translation ?? item.english_translation,
+                example_japanese: data.example_japanese ?? item.example_japanese,
+                example_english: data.example_english ?? item.example_english,
+                enriching: false,
+              }
+            : item
+        )
+      )
+    } catch {
+      setBreakdownItems((prev) =>
+        prev.map((item, i) => (i === index ? { ...item, enriching: false } : item))
+      )
+    }
   }
 
   function toggleItem(index: number) {
@@ -313,21 +348,26 @@ export default function SaveToDictionaryModal({
                     />
                     <div className="flex-1 space-y-2">
                       {/* Furigana preview */}
-                      <div className="pb-1 text-center text-xl">
-                        <ruby>
-                          {item.word}
-                          <rp style={{ userSelect: 'none' }}>(</rp>
-                          <rt className="text-xs font-normal tracking-wide" style={{ userSelect: 'none' }}>
-                            {item.hiragana}
-                          </rt>
-                          <rp style={{ userSelect: 'none' }}>)</rp>
-                        </ruby>
+                      <div className="relative pb-1 text-center text-xl">
+                        {item.enriching ? (
+                          <Loader2 size={18} className="mx-auto animate-spin text-violet-500" />
+                        ) : (
+                          <ruby>
+                            {item.word}
+                            <rp style={{ userSelect: 'none' }}>(</rp>
+                            <rt className="text-xs font-normal tracking-wide" style={{ userSelect: 'none' }}>
+                              {item.hiragana}
+                            </rt>
+                            <rp style={{ userSelect: 'none' }}>)</rp>
+                          </ruby>
+                        )}
                       </div>
                       {/* Word + hiragana row */}
                       <div className="flex gap-2">
                         <input
                           value={item.word}
                           onChange={(e) => updateItem(i, 'word', e.target.value)}
+                          onBlur={(e) => enrichItem(i, e.target.value)}
                           className={`${cardInputClass} w-28 font-medium`}
                           placeholder="Word"
                         />
