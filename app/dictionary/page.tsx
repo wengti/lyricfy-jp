@@ -130,7 +130,7 @@ export default function DictionaryPage() {
                   <th className="px-4 py-3">Japanese</th>
                   <th className="px-4 py-3">English</th>
                   <th className="px-4 py-3">Example</th>
-                  <th className="px-4 py-3">Source / Tags</th>
+                  <th className="px-4 py-3 w-40">Source / Tags</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>

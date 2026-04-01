@@ -48,9 +48,12 @@ export default function DictionaryEntryRow({ entry, onEdit, onDelete }: Props) {
           </div>
         )}
       </td>
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 max-w-0 w-40">
         {entry.source_song && (
-          <div className="text-xs text-gray-400 dark:text-gray-500">
+          <div
+            className="truncate text-xs text-gray-400 dark:text-gray-500"
+            title={`${entry.source_song}${entry.source_artist ? ` — ${entry.source_artist}` : ''}`}
+          >
             {entry.source_song}
             {entry.source_artist && ` — ${entry.source_artist}`}
           </div>
