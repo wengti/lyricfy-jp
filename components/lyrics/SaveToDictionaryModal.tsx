@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Loader2, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
+import { X, Loader2, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react'
 import type { DictionaryEntryInsert } from '@/types/database'
 import type { BreakdownWord } from '@/types/ai'
 
@@ -82,6 +82,7 @@ export default function SaveToDictionaryModal({
       }
       const data = await res.json()
       setBreakdownItems((data.words as BreakdownWord[]).map((w) => ({ ...w, selected: true, enriching: false })))
+      setCurrentPage(0)
       setMode('breakdown')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Breakdown failed')
@@ -189,6 +190,7 @@ export default function SaveToDictionaryModal({
   }
 
   const selectedCount = breakdownItems.filter((i) => i.selected).length
+  const [currentPage, setCurrentPage] = useState(0)
   const [collapsed, setCollapsed] = useState(false)
 
   const inputClass =
@@ -368,96 +370,121 @@ export default function SaveToDictionaryModal({
                 </div>
               </div>
 
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                AI found <strong>{breakdownItems.length}</strong> vocab. Select which to save — all fields are editable.
-              </p>
+              {/* Pagination header */}
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Vocab <strong>{currentPage + 1}</strong> of <strong>{breakdownItems.length}</strong>
+                </p>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                    disabled={currentPage === 0}
+                    className="rounded p-1 text-gray-500 hover:bg-gray-100 disabled:opacity-30 dark:hover:bg-gray-800"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                    disabled={currentPage === breakdownItems.length - 1}
+                    className="rounded p-1 text-gray-500 hover:bg-gray-100 disabled:opacity-30 dark:hover:bg-gray-800"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              </div>
 
-              {/* Card list */}
-              {breakdownItems.map((item, i) => (
-                <div
-                  key={i}
-                  className={`rounded-lg border p-3 transition-colors ${
-                    item.selected
-                      ? 'border-violet-300 bg-violet-50 dark:border-violet-700 dark:bg-violet-900/20'
-                      : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      checked={item.selected}
-                      onChange={() => toggleItem(i)}
-                      className="mt-1 h-4 w-4 rounded border-gray-300 accent-violet-600"
-                    />
-                    <div className="flex-1 space-y-2">
-                      {/* Furigana preview + refresh button */}
-                      <div className="flex items-center justify-center gap-2 pb-1">
-                        <div className="text-xl">
-                          {item.enriching ? (
-                            <Loader2 size={18} className="animate-spin text-violet-500" />
-                          ) : (
-                            <ruby>
-                              {item.word}
-                              <rp style={{ userSelect: 'none' }}>(</rp>
-                              <rt className="text-xs font-normal tracking-wide" style={{ userSelect: 'none' }}>
-                                {item.hiragana}
-                              </rt>
-                              <rp style={{ userSelect: 'none' }}>)</rp>
-                            </ruby>
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => enrichItem(i, item.word)}
-                          disabled={item.enriching}
-                          title="Update reading from AI"
-                          className="rounded p-1 text-gray-400 hover:text-violet-600 disabled:opacity-40"
-                        >
-                          <RefreshCw size={13} />
-                        </button>
-                      </div>
-                      {/* Word + hiragana row */}
-                      <div className="flex gap-2">
-                        <input
-                          value={item.word}
-                          onChange={(e) => updateItem(i, 'word', e.target.value)}
-                          className={`${cardFieldBase} w-28 shrink-0 font-medium`}
-                          placeholder="Word"
-                        />
-                        <input
-                          value={item.hiragana}
-                          onChange={(e) => updateItem(i, 'hiragana', e.target.value)}
-                          className={`${cardFieldBase} min-w-0 flex-1`}
-                          placeholder="ひらがな"
-                        />
-                      </div>
-                      {/* English */}
+              {/* Single card for current page */}
+              {(() => {
+                const item = breakdownItems[currentPage]
+                const i = currentPage
+                if (!item) return null
+                return (
+                  <div
+                    className={`rounded-lg border p-3 transition-colors ${
+                      item.selected
+                        ? 'border-violet-300 bg-violet-50 dark:border-violet-700 dark:bg-violet-900/20'
+                        : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
                       <input
-                        value={item.english_translation}
-                        onChange={(e) => updateItem(i, 'english_translation', e.target.value)}
-                        className={cardInputClass}
-                        placeholder="English meaning"
+                        type="checkbox"
+                        checked={item.selected}
+                        onChange={() => toggleItem(i)}
+                        className="mt-1 h-4 w-4 rounded border-gray-300 accent-violet-600"
                       />
-                      {/* Example JP */}
-                      <textarea
-                        rows={2}
-                        value={item.example_japanese}
-                        onChange={(e) => updateItem(i, 'example_japanese', e.target.value)}
-                        placeholder="例文..."
-                        className={`${cardInputClass} resize-none`}
-                      />
-                      {/* Example EN */}
-                      <textarea
-                        rows={2}
-                        value={item.example_english}
-                        onChange={(e) => updateItem(i, 'example_english', e.target.value)}
-                        placeholder="Example translation..."
-                        className={`${cardInputClass} resize-none`}
-                      />
+                      <div className="flex-1 space-y-2">
+                        {/* Furigana preview + refresh button */}
+                        <div className="flex items-center justify-center gap-2 pb-1">
+                          <div className="text-xl">
+                            {item.enriching ? (
+                              <Loader2 size={18} className="animate-spin text-violet-500" />
+                            ) : (
+                              <ruby>
+                                {item.word}
+                                <rp style={{ userSelect: 'none' }}>(</rp>
+                                <rt className="text-xs font-normal tracking-wide" style={{ userSelect: 'none' }}>
+                                  {item.hiragana}
+                                </rt>
+                                <rp style={{ userSelect: 'none' }}>)</rp>
+                              </ruby>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => enrichItem(i, item.word)}
+                            disabled={item.enriching}
+                            title="Update reading from AI"
+                            className="rounded p-1 text-gray-400 hover:text-violet-600 disabled:opacity-40"
+                          >
+                            <RefreshCw size={13} />
+                          </button>
+                        </div>
+                        {/* Word + hiragana row */}
+                        <div className="flex gap-2">
+                          <input
+                            value={item.word}
+                            onChange={(e) => updateItem(i, 'word', e.target.value)}
+                            className={`${cardFieldBase} w-28 shrink-0 font-medium`}
+                            placeholder="Word"
+                          />
+                          <input
+                            value={item.hiragana}
+                            onChange={(e) => updateItem(i, 'hiragana', e.target.value)}
+                            className={`${cardFieldBase} min-w-0 flex-1`}
+                            placeholder="ひらがな"
+                          />
+                        </div>
+                        {/* English */}
+                        <input
+                          value={item.english_translation}
+                          onChange={(e) => updateItem(i, 'english_translation', e.target.value)}
+                          className={cardInputClass}
+                          placeholder="English meaning"
+                        />
+                        {/* Example JP */}
+                        <textarea
+                          rows={2}
+                          value={item.example_japanese}
+                          onChange={(e) => updateItem(i, 'example_japanese', e.target.value)}
+                          placeholder="例文..."
+                          className={`${cardInputClass} resize-none`}
+                        />
+                        {/* Example EN */}
+                        <textarea
+                          rows={2}
+                          value={item.example_english}
+                          onChange={(e) => updateItem(i, 'example_english', e.target.value)}
+                          placeholder="Example translation..."
+                          className={`${cardInputClass} resize-none`}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })()}
             </div>
 
             {/* Sticky footer */}
