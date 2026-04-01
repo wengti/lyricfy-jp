@@ -9,10 +9,10 @@ export default function RubyText({ tokens }: Props) {
     <span>
       {tokens.map((token, i) =>
         token.reading ? (
-          <ruby key={i} className="ruby-token">
+          <ruby key={i}>
             {token.original}
             <rp style={{ userSelect: 'none' }}>(</rp>
-            <rt className="text-gray-400" style={{ userSelect: 'none' }}>{token.reading}</rt>
+            <rt style={{ userSelect: 'none' }}>{token.reading}</rt>
             <rp style={{ userSelect: 'none' }}>)</rp>
           </ruby>
         ) : (

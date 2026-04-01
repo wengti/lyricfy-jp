@@ -3,20 +3,15 @@
 /* Class-based dark mode for Tailwind v4 */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Ruby annotation styling */
+
+/* Ruby annotation — prevent furigana from being included in text selection */
 ruby {
   ruby-align: center;
 }
 
-rt {
-  font-size: 0.7em;
-  color: #9ca3af;
-  line-height: 1.2;
-  letter-spacing: 0.02em;
-}
-
-.dark rt {
-  color: #6b7280;
+rt, rp {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* Karaoke bounce animation for NowPlayingBanner */

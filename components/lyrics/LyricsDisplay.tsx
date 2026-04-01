@@ -57,17 +57,24 @@ export default function LyricsDisplay({
     return idx
   }, [lines, synced, progressMs])
 
+  function handleMouseDown() {
+    // Hide furigana the moment the user starts dragging so the selection never touches it
+    document.querySelectorAll<HTMLElement>('rt, rp').forEach((el) => {
+      el.style.visibility = 'hidden'
+    })
+  }
+
   function handleMouseUp() {
-    if (!onSelectPhrase) return
     const selection = window.getSelection()
-    if (!selection || selection.rangeCount === 0) return
-    const range = selection.getRangeAt(0)
-    const fragment = range.cloneContents()
-    fragment.querySelectorAll('rt, rp').forEach((el) => el.remove())
-    const text = fragment.textContent?.trim() ?? ''
-    if (text.length > 0) {
-      onSelectPhrase(text, activeIndex)
-    }
+    const text = selection?.toString().trim() ?? ''
+
+    // Restore furigana now that we have the clean text
+    document.querySelectorAll<HTMLElement>('rt, rp').forEach((el) => {
+      el.style.visibility = ''
+    })
+
+    if (!onSelectPhrase || !text) return
+    onSelectPhrase(text, activeIndex)
   }
 
   return (
@@ -115,7 +122,7 @@ export default function LyricsDisplay({
       </div>
 
       {/* Lines */}
-      <div className="space-y-1" onMouseUp={handleMouseUp}>
+      <div className="space-y-1" onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}>
         {lines.map((line, i) => (
           <LyricsLine
             key={i}
