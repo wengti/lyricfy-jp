@@ -7,7 +7,7 @@ import type { LrcLine, TranslatedLine } from '@/types/ai'
 interface Props {
   lines: LrcLine[]
   synced: boolean
-  source: 'lrclib' | 'lrclib-romaji' | 'genius' | 'manual' | null
+  source: 'lrclib' | 'lrclib-romaji' | 'genius' | 'manual' | 'manual-romaji' | null
   translatedLines: TranslatedLine[] | null
   translationsLoading?: boolean
   furiganaError?: string | null
@@ -27,6 +27,9 @@ const SOURCE_BADGE: Record<string, Record<string, { label: string; title: string
   },
   manual: {
     unsynced: { label: 'Manual · unsynced', title: 'Manually pasted lyrics have no timestamps — karaoke unavailable', cls: 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700' },
+  },
+  'manual-romaji': {
+    unsynced: { label: 'Manual · romaji · unsynced', title: 'Manually pasted romaji lyrics converted to Japanese — karaoke unavailable', cls: 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700' },
   },
 }
 

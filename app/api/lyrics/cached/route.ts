@@ -6,7 +6,7 @@ import type { LrcLine, TranslatedLine } from '@/types/ai'
 interface CacheEntry {
   linesHash: string
   lines: TranslatedLine[]
-  source?: 'manual' | 'lrclib' | 'lrclib-romaji'
+  source?: 'manual' | 'manual-romaji' | 'lrclib' | 'lrclib-romaji'
   timestamps?: number[]
   synced?: boolean
 }

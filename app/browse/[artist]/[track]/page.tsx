@@ -8,7 +8,7 @@ import type { LrcLine, TranslatedLine } from '@/types/ai'
 interface CacheEntry {
   linesHash: string
   lines: TranslatedLine[]
-  source?: 'manual' | 'lrclib' | 'lrclib-romaji'
+  source?: 'manual' | 'manual-romaji' | 'lrclib' | 'lrclib-romaji'
   timestamps?: number[]
   synced?: boolean
 }
@@ -53,7 +53,7 @@ export default async function BrowseDetailPage({ params }: { params: Params }) {
 
   let translatedLines: TranslatedLine[]
   let timestamps: number[] | undefined
-  let source: 'lrclib' | 'lrclib-romaji' | 'manual' | null
+  let source: 'lrclib' | 'lrclib-romaji' | 'manual' | 'manual-romaji' | null
   let synced: boolean
 
   if (Array.isArray(raw)) {

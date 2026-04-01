@@ -32,7 +32,7 @@ export async function GET(request: Request) {
       notFound: false,
       isJapanese: true,
       wasRomaji: manualResult.wasRomaji,
-      source: manualResult.wasRomaji ? 'lrclib-romaji' : 'manual',
+      source: manualResult.source,
     }
     return NextResponse.json(response)
   }

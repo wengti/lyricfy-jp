@@ -11,7 +11,7 @@ interface SearchResult {
 }
 
 function getSourceBadge(source: string | null) {
-  if (!source || source === 'manual') {
+  if (!source || source === 'manual' || source === 'manual-romaji') {
     return { label: 'Manual', cls: 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700' }
   }
   if (source === 'lrclib' || source === 'lrclib-romaji') {

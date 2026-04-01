@@ -12,7 +12,7 @@ import type { LrcLine, TranslatedLine } from '@/types/ai'
 interface Props {
   lines: LrcLine[]
   translatedLines: TranslatedLine[]
-  source: 'lrclib' | 'lrclib-romaji' | 'manual' | null
+  source: 'lrclib' | 'lrclib-romaji' | 'manual' | 'manual-romaji' | null
   synced: boolean
   trackName: string
   artist: string
@@ -37,6 +37,7 @@ export default function BrowseDetailClient({
   const [romajiConverting, setRomajiConverting] = useState(false)
   const [activeLines, setActiveLines] = useState<LrcLine[]>(lines)
   const [activeTranslatedLines, setActiveTranslatedLines] = useState<TranslatedLine[]>(translatedLines)
+  const [activeSource, setActiveSource] = useState(source)
 
   const lyricsExist = activeLines.length > 0
 
@@ -72,8 +73,9 @@ export default function BrowseDetailClient({
 
     let linesToProcess = submittedLines
     const texts = submittedLines.map(l => l.text)
+    const isRomaji = detectScript(texts) === 'romaji'
 
-    if (detectScript(texts) === 'romaji') {
+    if (isRomaji) {
       setRomajiConverting(true)
       try {
         const res = await fetch('/api/ai/romaji-to-japanese', {
@@ -110,6 +112,7 @@ export default function BrowseDetailClient({
           track: trackName,
           artist,
           force: true,
+          wasRomaji: isRomaji,
           timestamps: linesToProcess.map(l => l.ms),
           synced: false,
         }),
@@ -129,6 +132,7 @@ export default function BrowseDetailClient({
           .filter(l => l.text.trim())
         setActiveLines(newLines)
         setActiveTranslatedLines(newTranslated)
+        setActiveSource(isRomaji ? 'manual-romaji' : 'manual')
       }
     } finally {
       if (!controller.signal.aborted) setRetranslating(false)
@@ -207,7 +211,7 @@ export default function BrowseDetailClient({
       <LyricsDisplay
         lines={activeLines}
         synced={synced}
-        source={source}
+        source={activeSource}
         translatedLines={activeTranslatedLines.length > 0 ? activeTranslatedLines : null}
         translationsLoading={retranslating || romajiConverting}
         furiganaError={null}

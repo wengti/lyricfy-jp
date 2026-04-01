@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     // Only cache when at least one line has furigana tokens — guards against
     // saving empty results for non-Japanese content or stale/mismatched lines.
     if (track && artist && all.some((l) => l.tokens.length > 0)) {
-      const saveSource = wasRomaji ? 'lrclib-romaji' : syncedUpgrade ? 'lrclib' : force ? 'manual' : 'lrclib'
+      const saveSource = syncedUpgrade ? 'lrclib' : (force && wasRomaji) ? 'manual-romaji' : wasRomaji ? 'lrclib-romaji' : force ? 'manual' : 'lrclib'
       await setCachedTranslation(
         track, artist, all, lines,
         saveSource,
