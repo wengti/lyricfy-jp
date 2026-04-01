@@ -26,7 +26,10 @@ export default function ExampleFuriganaEditor({
 }: Props) {
   const [annotating, setAnnotating] = useState(false)
   const [annotateError, setAnnotateError] = useState<string | null>(null)
-  const isFirstRender = useRef(true)
+  // Skip the first-render annotation only when tokens are already provided at
+  // mount (i.e. editing an existing entry — we don't want to clobber them).
+  // When tokens are null at mount (e.g. fresh breakdown result), annotate immediately.
+  const isFirstRender = useRef(tokens !== null)
 
   // Auto-annotate after the user stops typing; skip on initial mount so
   // pre-existing tokens (loaded from DB) are never clobbered.
