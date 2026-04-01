@@ -11,9 +11,9 @@ export default function RubyText({ tokens }: Props) {
         token.reading ? (
           <ruby key={i} className="ruby-token">
             {token.original}
-            <rp>(</rp>
-            <rt className="text-gray-400">{token.reading}</rt>
-            <rp>)</rp>
+            <rp style={{ userSelect: 'none' }}>(</rp>
+            <rt className="text-gray-400" style={{ userSelect: 'none' }}>{token.reading}</rt>
+            <rp style={{ userSelect: 'none' }}>)</rp>
           </ruby>
         ) : (
           <span key={i}>{token.original}</span>

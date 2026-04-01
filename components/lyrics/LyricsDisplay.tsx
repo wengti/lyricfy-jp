@@ -60,8 +60,12 @@ export default function LyricsDisplay({
   function handleMouseUp() {
     if (!onSelectPhrase) return
     const selection = window.getSelection()
-    const text = selection?.toString().trim()
-    if (text && text.length > 0) {
+    if (!selection || selection.rangeCount === 0) return
+    const range = selection.getRangeAt(0)
+    const fragment = range.cloneContents()
+    fragment.querySelectorAll('rt, rp').forEach((el) => el.remove())
+    const text = fragment.textContent?.trim() ?? ''
+    if (text.length > 0) {
       onSelectPhrase(text, activeIndex)
     }
   }
