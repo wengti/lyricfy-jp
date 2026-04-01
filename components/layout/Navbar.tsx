@@ -34,7 +34,7 @@ export default function Navbar() {
         </Link>
 
         {/* Main nav */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0 sm:gap-1">
           {NAV_LINKS.map(({ href, label, icon: Icon }) => {
             const active = pathname.startsWith(href)
             return (
@@ -42,7 +42,7 @@ export default function Navbar() {
                 key={href}
                 href={href}
                 title={label}
-                className={`flex items-center gap-1.5 rounded-md px-2 py-2 text-sm font-medium transition-colors sm:px-3 ${
+                className={`flex items-center gap-1.5 rounded-md px-1.5 py-2 text-sm font-medium transition-colors sm:px-3 ${
                   active
                     ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100'
