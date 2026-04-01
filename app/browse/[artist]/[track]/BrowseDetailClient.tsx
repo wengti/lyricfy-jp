@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import LyricsDisplay from '@/components/lyrics/LyricsDisplay'
 import SaveToDictionaryModal from '@/components/lyrics/SaveToDictionaryModal'
 import ManualLyricsInput from '@/components/lyrics/ManualLyricsInput'
+import SyncedVersionBanner from '@/components/lyrics/SyncedVersionBanner'
 import { useDictionary } from '@/hooks/useDictionary'
 import { useIsAdmin } from '@/hooks/useIsAdmin'
 import { detectScript } from '@/lib/utils/japanese'
@@ -38,8 +39,60 @@ export default function BrowseDetailClient({
   const [activeLines, setActiveLines] = useState<LrcLine[]>(lines)
   const [activeTranslatedLines, setActiveTranslatedLines] = useState<TranslatedLine[]>(translatedLines)
   const [activeSource, setActiveSource] = useState(source)
+  const [activeSynced, setActiveSynced] = useState(synced)
+
+  const [syncedUpgrade, setSyncedUpgrade] = useState<{ lines: LrcLine[] } | null>(null)
+  const [lrclibChecked, setLrclibChecked] = useState(false)
+  const [acceptingUpgrade, setAcceptingUpgrade] = useState(false)
 
   const lyricsExist = activeLines.length > 0
+
+  // Background check: look for a synced version on lrclib.net when displaying unsynced lyrics
+  useEffect(() => {
+    if (activeSynced) return
+
+    const controller = new AbortController()
+    const params = new URLSearchParams({ track: trackName, artist })
+    fetch(`/api/lyrics/check-synced?${params}`, { signal: controller.signal })
+      .then(r => r.json())
+      .then(d => {
+        if (d.hasSynced) setSyncedUpgrade({ lines: d.lines })
+        setLrclibChecked(true)
+      })
+      .catch(() => {})
+
+    return () => controller.abort()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function handleAcceptUpgrade() {
+    if (!syncedUpgrade) return
+    setAcceptingUpgrade(true)
+    try {
+      const res = await fetch('/api/ai/furigana', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lines: syncedUpgrade.lines.map(l => l.text),
+          track: trackName,
+          artist,
+          syncedUpgrade: true,
+          timestamps: syncedUpgrade.lines.map(l => l.ms),
+          synced: true,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setActiveLines(syncedUpgrade.lines)
+        setActiveTranslatedLines(data.lines as TranslatedLine[])
+        setActiveSynced(true)
+        setActiveSource('lrclib')
+        setSyncedUpgrade(null)
+        setLrclibChecked(false)
+      }
+    } finally {
+      setAcceptingUpgrade(false)
+    }
+  }
 
   async function handleRetranslate() {
     if (activeLines.length === 0) return
@@ -54,7 +107,7 @@ export default function BrowseDetailClient({
           artist,
           force: true,
           timestamps: activeLines.map(l => l.ms),
-          synced,
+          synced: activeSynced,
         }),
       })
       if (res.ok) {
@@ -151,6 +204,18 @@ export default function BrowseDetailClient({
 
   return (
     <>
+      {/* Synced version banner */}
+      {(syncedUpgrade || lrclibChecked) && (
+        <SyncedVersionBanner
+          lines={syncedUpgrade?.lines}
+          isAdmin={isAdmin ?? false}
+          onAccept={handleAcceptUpgrade}
+          accepting={acceptingUpgrade}
+          track={trackName}
+          artist={artist}
+        />
+      )}
+
       {/* Admin: retranslate + replace buttons */}
       {lyricsExist && isAdmin === true && !showReplace && (
         <div className="mb-4 flex items-center justify-end gap-4">
@@ -210,7 +275,7 @@ export default function BrowseDetailClient({
 
       <LyricsDisplay
         lines={activeLines}
-        synced={synced}
+        synced={activeSynced}
         source={activeSource}
         translatedLines={activeTranslatedLines.length > 0 ? activeTranslatedLines : null}
         translationsLoading={retranslating || romajiConverting}
