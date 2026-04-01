@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
+import { X, Loader2, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
 import type { DictionaryEntryInsert } from '@/types/database'
 import type { BreakdownWord } from '@/types/ai'
 
@@ -192,10 +192,12 @@ export default function SaveToDictionaryModal({
   const [collapsed, setCollapsed] = useState(false)
 
   const inputClass =
-    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-indigo-800'
+    'w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-indigo-800'
 
-  const cardInputClass =
-    'w-full rounded border border-gray-300 px-2 py-1 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-indigo-800'
+  // Base without w-full so word/hiragana inputs can set their own widths without conflict
+  const cardFieldBase =
+    'rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-indigo-800'
+  const cardInputClass = `w-full ${cardFieldBase}`
 
   if (collapsed) {
     return (
@@ -388,34 +390,44 @@ export default function SaveToDictionaryModal({
                       className="mt-1 h-4 w-4 rounded border-gray-300 accent-violet-600"
                     />
                     <div className="flex-1 space-y-2">
-                      {/* Furigana preview */}
-                      <div className="relative pb-1 text-center text-xl">
-                        {item.enriching ? (
-                          <Loader2 size={18} className="mx-auto animate-spin text-violet-500" />
-                        ) : (
-                          <ruby>
-                            {item.word}
-                            <rp style={{ userSelect: 'none' }}>(</rp>
-                            <rt className="text-xs font-normal tracking-wide" style={{ userSelect: 'none' }}>
-                              {item.hiragana}
-                            </rt>
-                            <rp style={{ userSelect: 'none' }}>)</rp>
-                          </ruby>
-                        )}
+                      {/* Furigana preview + refresh button */}
+                      <div className="flex items-center justify-center gap-2 pb-1">
+                        <div className="text-xl">
+                          {item.enriching ? (
+                            <Loader2 size={18} className="animate-spin text-violet-500" />
+                          ) : (
+                            <ruby>
+                              {item.word}
+                              <rp style={{ userSelect: 'none' }}>(</rp>
+                              <rt className="text-xs font-normal tracking-wide" style={{ userSelect: 'none' }}>
+                                {item.hiragana}
+                              </rt>
+                              <rp style={{ userSelect: 'none' }}>)</rp>
+                            </ruby>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => enrichItem(i, item.word)}
+                          disabled={item.enriching}
+                          title="Update reading from AI"
+                          className="rounded p-1 text-gray-400 hover:text-violet-600 disabled:opacity-40"
+                        >
+                          <RefreshCw size={13} />
+                        </button>
                       </div>
                       {/* Word + hiragana row */}
                       <div className="flex gap-2">
                         <input
                           value={item.word}
                           onChange={(e) => updateItem(i, 'word', e.target.value)}
-                          onBlur={(e) => enrichItem(i, e.target.value)}
-                          className={`${cardInputClass} w-28 font-medium`}
+                          className={`${cardFieldBase} w-28 shrink-0 font-medium`}
                           placeholder="Word"
                         />
                         <input
                           value={item.hiragana}
                           onChange={(e) => updateItem(i, 'hiragana', e.target.value)}
-                          className={`${cardInputClass} flex-1`}
+                          className={`${cardFieldBase} min-w-0 flex-1`}
                           placeholder="ひらがな"
                         />
                       </div>
