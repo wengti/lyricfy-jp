@@ -1,5 +1,26 @@
 import { Pencil, Trash2 } from 'lucide-react'
 import type { DictionaryEntry } from '@/types/database'
+import type { FuriganaToken } from '@/types/ai'
+
+function FuriganaText({ tokens, fallback }: { tokens: FuriganaToken[]; fallback: string }) {
+  return (
+    <span>
+      {tokens.map((t, i) =>
+        t.reading ? (
+          <ruby key={i}>
+            {t.original}
+            <rp>(</rp>
+            <rt className="text-xs font-normal">{t.reading}</rt>
+            <rp>)</rp>
+          </ruby>
+        ) : (
+          <span key={i}>{t.original}</span>
+        )
+      )}
+      {tokens.length === 0 && fallback}
+    </span>
+  )
+}
 
 interface Props {
   entry: DictionaryEntry
@@ -18,7 +39,11 @@ export default function DictionaryEntryRow({ entry, onEdit, onDelete }: Props) {
       <td className="px-4 py-3">
         {entry.example_japanese && (
           <div className="text-sm">
-            <div className="text-gray-700 dark:text-gray-300">{entry.example_japanese}</div>
+            <div className="text-gray-700 dark:text-gray-300">
+              {entry.example_furigana && entry.example_furigana.length > 0
+                ? <FuriganaText tokens={entry.example_furigana} fallback={entry.example_japanese} />
+                : entry.example_japanese}
+            </div>
             <div className="text-gray-400 dark:text-gray-500">{entry.example_english}</div>
           </div>
         )}

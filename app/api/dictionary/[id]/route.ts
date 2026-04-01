@@ -7,6 +7,7 @@ const updateSchema = z.object({
   hiragana: z.string().min(1).max(400).optional(),
   english_translation: z.string().min(1).max(500).optional(),
   example_japanese: z.string().max(500).nullable().optional(),
+  example_furigana: z.array(z.object({ original: z.string(), reading: z.string().nullable() })).nullable().optional(),
   example_english: z.string().max(500).nullable().optional(),
   source_song: z.string().max(200).nullable().optional(),
   source_artist: z.string().max(200).nullable().optional(),

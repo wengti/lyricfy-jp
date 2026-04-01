@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { X, Loader2 } from 'lucide-react'
 import type { DictionaryEntry, DictionaryEntryUpdate } from '@/types/database'
+import type { FuriganaToken } from '@/types/ai'
+import ExampleFuriganaEditor from './ExampleFuriganaEditor'
 
 interface Props {
   entry: DictionaryEntry
@@ -18,6 +20,7 @@ export default function EditWordModal({ entry, onClose, onSave }: Props) {
     hiragana: entry.hiragana,
     english_translation: entry.english_translation,
     example_japanese: entry.example_japanese ?? '',
+    example_furigana: entry.example_furigana ?? null,
     example_english: entry.example_english ?? '',
     tags: [...entry.tags],
   })
@@ -103,10 +106,12 @@ export default function EditWordModal({ entry, onClose, onSave }: Props) {
 
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Example (JP)</label>
-            <input
-              value={form.example_japanese ?? ''}
-              onChange={(e) => set('example_japanese', e.target.value)}
-              className={inputCls}
+            <ExampleFuriganaEditor
+              text={form.example_japanese ?? ''}
+              tokens={(form.example_furigana as FuriganaToken[] | null | undefined) ?? null}
+              onTextChange={(text) => setForm((f) => ({ ...f, example_japanese: text, example_furigana: null }))}
+              onTokensChange={(tokens) => setForm((f) => ({ ...f, example_furigana: tokens }))}
+              textareaClassName={inputCls}
             />
           </div>
           <div>

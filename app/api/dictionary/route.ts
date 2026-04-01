@@ -15,6 +15,7 @@ const insertSchema = z.object({
   hiragana: z.string().min(1).max(400),
   english_translation: z.string().min(1).max(500),
   example_japanese: z.string().max(500).optional().nullable(),
+  example_furigana: z.array(z.object({ original: z.string(), reading: z.string().nullable() })).optional().nullable(),
   example_english: z.string().max(500).optional().nullable(),
   source_song: z.string().max(200).optional().nullable(),
   source_artist: z.string().max(200).optional().nullable(),

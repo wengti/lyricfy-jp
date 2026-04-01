@@ -3,11 +3,13 @@
 import { useState } from 'react'
 import { X, Loader2, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react'
 import type { DictionaryEntryInsert } from '@/types/database'
-import type { BreakdownWord } from '@/types/ai'
+import type { BreakdownWord, FuriganaToken } from '@/types/ai'
+import ExampleFuriganaEditor from '@/components/dictionary/ExampleFuriganaEditor'
 
 interface BreakdownItem extends BreakdownWord {
   selected: boolean
   enriching: boolean
+  example_furigana: FuriganaToken[] | null
 }
 
 interface Props {
@@ -37,6 +39,7 @@ export default function SaveToDictionaryModal({
   const [hiragana, setHiragana] = useState('')
   const [english, setEnglish] = useState('')
   const [exampleJapanese, setExampleJapanese] = useState('')
+  const [exampleFurigana, setExampleFurigana] = useState<FuriganaToken[] | null>(null)
   const [exampleEnglish, setExampleEnglish] = useState('')
   const [enriching, setEnriching] = useState(false)
 
@@ -65,6 +68,18 @@ export default function SaveToDictionaryModal({
       setEnglish(data.english_translation ?? '')
       setExampleJapanese(data.example_japanese ?? '')
       setExampleEnglish(data.example_english ?? '')
+      setExampleFurigana(null)
+      // Auto-annotate the generated example sentence
+      if (data.example_japanese) {
+        try {
+          const aRes = await fetch('/api/ai/annotate-example', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: data.example_japanese }),
+          })
+          if (aRes.ok) setExampleFurigana((await aRes.json()).furigana ?? null)
+        } catch { /* non-fatal */ }
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Enrichment failed')
     } finally {
@@ -86,7 +101,7 @@ export default function SaveToDictionaryModal({
         throw new Error(data.error ?? 'Breakdown failed')
       }
       const data = await res.json()
-      setBreakdownItems((data.words as BreakdownWord[]).map((w) => ({ ...w, selected: true, enriching: false })))
+      setBreakdownItems((data.words as BreakdownWord[]).map((w) => ({ ...w, selected: true, enriching: false, example_furigana: null })))
       setPhraseTranslation(data.phraseTranslation ?? '')
       setCurrentPage(0)
       setMode('breakdown')
@@ -99,7 +114,17 @@ export default function SaveToDictionaryModal({
 
   function updateItem(index: number, field: keyof BreakdownWord, value: string) {
     setBreakdownItems((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+      prev.map((item, i) =>
+        i === index
+          ? { ...item, [field]: value, ...(field === 'example_japanese' ? { example_furigana: null } : {}) }
+          : item
+      )
+    )
+  }
+
+  function updateItemFurigana(index: number, tokens: FuriganaToken[] | null) {
+    setBreakdownItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, example_furigana: tokens } : item))
     )
   }
 
@@ -116,6 +141,18 @@ export default function SaveToDictionaryModal({
       })
       if (!res.ok) throw new Error('Enrichment failed')
       const data = await res.json()
+      // Auto-annotate the generated example
+      let furigana: FuriganaToken[] | null = null
+      if (data.example_japanese) {
+        try {
+          const aRes = await fetch('/api/ai/annotate-example', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: data.example_japanese }),
+          })
+          if (aRes.ok) furigana = (await aRes.json()).furigana ?? null
+        } catch { /* non-fatal */ }
+      }
       setBreakdownItems((prev) =>
         prev.map((item, i) =>
           i === index
@@ -124,6 +161,7 @@ export default function SaveToDictionaryModal({
                 hiragana: data.hiragana ?? item.hiragana,
                 english_translation: data.english_translation ?? item.english_translation,
                 example_japanese: data.example_japanese ?? item.example_japanese,
+                example_furigana: furigana,
                 example_english: data.example_english ?? item.example_english,
                 enriching: false,
               }
@@ -154,6 +192,7 @@ export default function SaveToDictionaryModal({
         hiragana,
         english_translation: english,
         example_japanese: exampleJapanese || null,
+        example_furigana: exampleFurigana,
         example_english: exampleEnglish || null,
         source_song: frozenSourceSong ?? null,
         source_artist: frozenSourceArtist ?? null,
@@ -181,6 +220,7 @@ export default function SaveToDictionaryModal({
           english_translation: item.english_translation,
           example_japanese: item.example_japanese || null,
           example_english: item.example_english || null,
+          example_furigana: item.example_furigana,
           source_song: frozenSourceSong ?? null,
           source_artist: frozenSourceArtist ?? null,
           source_lyrics_line: frozenSourceLyricsLine ?? null,
@@ -313,12 +353,12 @@ export default function SaveToDictionaryModal({
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Example sentence (Japanese)
                 </label>
-                <textarea
-                  rows={2}
-                  value={exampleJapanese}
-                  onChange={(e) => setExampleJapanese(e.target.value)}
-                  placeholder="例文..."
-                  className={`${inputClass} resize-none`}
+                <ExampleFuriganaEditor
+                  text={exampleJapanese}
+                  tokens={exampleFurigana}
+                  onTextChange={(text) => { setExampleJapanese(text); setExampleFurigana(null) }}
+                  onTokensChange={setExampleFurigana}
+                  textareaClassName={inputClass}
                 />
               </div>
               <div>
@@ -474,12 +514,12 @@ export default function SaveToDictionaryModal({
                           placeholder="English meaning"
                         />
                         {/* Example JP */}
-                        <textarea
-                          rows={2}
-                          value={item.example_japanese}
-                          onChange={(e) => updateItem(i, 'example_japanese', e.target.value)}
-                          placeholder="例文..."
-                          className={`${cardInputClass} resize-none`}
+                        <ExampleFuriganaEditor
+                          text={item.example_japanese}
+                          tokens={item.example_furigana}
+                          onTextChange={(text) => updateItem(i, 'example_japanese', text)}
+                          onTokensChange={(tokens) => updateItemFurigana(i, tokens)}
+                          textareaClassName={cardInputClass}
                         />
                         {/* Example EN */}
                         <textarea

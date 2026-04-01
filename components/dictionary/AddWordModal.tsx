@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { X, Loader2 } from 'lucide-react'
 import type { DictionaryEntryInsert } from '@/types/database'
+import type { FuriganaToken } from '@/types/ai'
+import ExampleFuriganaEditor from './ExampleFuriganaEditor'
 
 interface Props {
   onClose: () => void
@@ -15,6 +17,7 @@ const EMPTY: DictionaryEntryInsert = {
   hiragana: '',
   english_translation: '',
   example_japanese: '',
+  example_furigana: null,
   example_english: '',
   source_song: '',
   source_artist: '',
@@ -55,8 +58,23 @@ export default function AddWordModal({ onClose, onSave, prefill }: Props) {
         hiragana: data.hiragana ?? f.hiragana,
         english_translation: data.english_translation ?? f.english_translation,
         example_japanese: data.example_japanese ?? f.example_japanese,
+        example_furigana: null,
         example_english: data.example_english ?? f.example_english,
       }))
+      // Auto-annotate the generated example sentence
+      if (data.example_japanese) {
+        try {
+          const aRes = await fetch('/api/ai/annotate-example', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: data.example_japanese }),
+          })
+          if (aRes.ok) {
+            const furigana = (await aRes.json()).furigana ?? null
+            setForm((f) => ({ ...f, example_furigana: furigana }))
+          }
+        } catch { /* non-fatal */ }
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Enrichment failed')
     } finally {
@@ -163,11 +181,12 @@ export default function AddWordModal({ onClose, onSave, prefill }: Props) {
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Example sentence (JP)
             </label>
-            <input
-              value={form.example_japanese ?? ''}
-              onChange={(e) => set('example_japanese', e.target.value)}
-              className={inputCls}
-              placeholder="桜が咲いている。"
+            <ExampleFuriganaEditor
+              text={form.example_japanese ?? ''}
+              tokens={(form.example_furigana as FuriganaToken[] | null | undefined) ?? null}
+              onTextChange={(text) => setForm((f) => ({ ...f, example_japanese: text, example_furigana: null }))}
+              onTokensChange={(tokens) => setForm((f) => ({ ...f, example_furigana: tokens }))}
+              textareaClassName={inputCls}
             />
           </div>
           <div>

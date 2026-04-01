@@ -51,6 +51,7 @@ create table public.dictionary_entries (
   hiragana            text not null,
   english_translation text not null,
   example_japanese    text,
+  example_furigana    jsonb,
   example_english     text,
   source_song         text,
   source_artist       text,

@@ -1,3 +1,5 @@
+import type { FuriganaToken } from '@/types/ai'
+
 export interface DictionaryEntry {
   id: string
   user_id: string
@@ -5,6 +7,7 @@ export interface DictionaryEntry {
   hiragana: string
   english_translation: string
   example_japanese: string | null
+  example_furigana: FuriganaToken[] | null
   example_english: string | null
   source_song: string | null
   source_artist: string | null
