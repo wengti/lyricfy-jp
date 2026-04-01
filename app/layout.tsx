@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/layout/Navbar'
@@ -11,6 +11,11 @@ export const metadata: Metadata = {
   title: 'LyricfyJP — Learn Japanese with Music',
   description:
     'Learn Japanese using real song lyrics — furigana annotations, live karaoke sync, personal dictionary, and flashcards.',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default async function RootLayout({
