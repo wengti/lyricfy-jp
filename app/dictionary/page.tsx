@@ -1,17 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Search, BookOpen } from 'lucide-react'
+import { Plus, Search, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useDictionary } from '@/hooks/useDictionary'
 import DictionaryEntryRow from '@/components/dictionary/DictionaryEntry'
 import AddWordModal from '@/components/dictionary/AddWordModal'
 import EditWordModal from '@/components/dictionary/EditWordModal'
 import type { DictionaryEntry, DictionarySortOption } from '@/types/database'
 
+const PAGE_SIZE = 20
+
 export default function DictionaryPage() {
   const [sort, setSort] = useState<DictionarySortOption>('created_at_desc')
   const [search, setSearch] = useState('')
   const [tagFilter, setTagFilter] = useState('')
+  const [page, setPage] = useState(0)
   const [showAdd, setShowAdd] = useState(false)
   const [editEntry, setEditEntry] = useState<DictionaryEntry | null>(null)
 
@@ -23,6 +26,11 @@ export default function DictionaryPage() {
 
   // Collect all unique tags from current entries for the filter dropdown
   const allTags = Array.from(new Set(entries.flatMap((e) => e.tags))).sort()
+
+  const totalPages = Math.ceil(entries.length / PAGE_SIZE)
+  const pagedEntries = entries.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+
+  function resetPage() { setPage(0) }
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this word from your dictionary?')) return
@@ -57,7 +65,7 @@ export default function DictionaryPage() {
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); resetPage() }}
             placeholder="Search words…"
             className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:ring-indigo-800"
           />
@@ -65,7 +73,7 @@ export default function DictionaryPage() {
 
         <select
           value={sort}
-          onChange={(e) => setSort(e.target.value as DictionarySortOption)}
+          onChange={(e) => { setSort(e.target.value as DictionarySortOption); resetPage() }}
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
         >
           <option value="created_at_desc">Newest first</option>
@@ -77,7 +85,7 @@ export default function DictionaryPage() {
         {allTags.length > 0 && (
           <select
             value={tagFilter}
-            onChange={(e) => setTagFilter(e.target.value)}
+            onChange={(e) => { setTagFilter(e.target.value); resetPage() }}
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
           >
             <option value="">All tags</option>
@@ -114,29 +122,54 @@ export default function DictionaryPage() {
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-          <table className="w-full text-left">
-            <thead className="border-b border-gray-100 bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-400">
-              <tr>
-                <th className="px-4 py-3">Japanese</th>
-                <th className="px-4 py-3">English</th>
-                <th className="px-4 py-3">Example</th>
-                <th className="px-4 py-3">Source / Tags</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map((entry) => (
-                <DictionaryEntryRow
-                  key={entry.id}
-                  entry={entry}
-                  onEdit={setEditEntry}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+            <table className="w-full text-left">
+              <thead className="border-b border-gray-100 bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-400">
+                <tr>
+                  <th className="px-4 py-3">Japanese</th>
+                  <th className="px-4 py-3">English</th>
+                  <th className="px-4 py-3">Example</th>
+                  <th className="px-4 py-3">Source / Tags</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody>
+                {pagedEntries.map((entry) => (
+                  <DictionaryEntryRow
+                    key={entry.id}
+                    entry={entry}
+                    onEdit={setEditEntry}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <button
+                onClick={() => setPage((p) => p - 1)}
+                disabled={page === 0}
+                className="rounded-lg border border-gray-300 p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Page <strong>{page + 1}</strong> of <strong>{totalPages}</strong>
+              </span>
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page >= totalPages - 1}
+                className="rounded-lg border border-gray-300 p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Modals */}
