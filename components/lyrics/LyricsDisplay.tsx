@@ -117,7 +117,7 @@ export default function LyricsDisplay({
   return (
     <div>
       {/* Controls */}
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         {/* Source badge + furigana error badge */}
         <div className="flex items-center gap-2">
           {source && SOURCE_BADGE[source] && (() => {
@@ -138,7 +138,7 @@ export default function LyricsDisplay({
           )}
         </div>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="flex items-center gap-3">
           {translationsLoading && (
             <span className="text-xs text-gray-400 dark:text-gray-500 animate-pulse">
               Generating furigana…
