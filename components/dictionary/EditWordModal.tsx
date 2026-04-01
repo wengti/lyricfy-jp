@@ -111,6 +111,7 @@ export default function EditWordModal({ entry, onClose, onSave }: Props) {
               tokens={(form.example_furigana as FuriganaToken[] | null | undefined) ?? null}
               onTextChange={(text) => setForm((f) => ({ ...f, example_japanese: text, example_furigana: null }))}
               onTokensChange={(tokens) => setForm((f) => ({ ...f, example_furigana: tokens }))}
+              skipInitialAnnotation
               textareaClassName={inputCls}
             />
           </div>

@@ -13,6 +13,7 @@ interface Props {
   onTextChange: (text: string) => void
   onTokensChange: (tokens: FuriganaToken[] | null) => void
   disabled?: boolean
+  skipInitialAnnotation?: boolean // suppress auto-annotate on mount even when tokens are null
   textareaClassName: string
 }
 
@@ -22,14 +23,16 @@ export default function ExampleFuriganaEditor({
   onTextChange,
   onTokensChange,
   disabled,
+  skipInitialAnnotation,
   textareaClassName,
 }: Props) {
   const [annotating, setAnnotating] = useState(false)
   const [annotateError, setAnnotateError] = useState<string | null>(null)
-  // Skip the first-render annotation only when tokens are already provided at
-  // mount (i.e. editing an existing entry — we don't want to clobber them).
-  // When tokens are null at mount (e.g. fresh breakdown result), annotate immediately.
-  const isFirstRender = useRef(tokens !== null)
+  // Skip the first-render annotation when tokens are already provided (editing an
+  // existing entry), or when the caller explicitly opts out (skipInitialAnnotation).
+  // When tokens are null at mount and skipInitialAnnotation is false (e.g. fresh
+  // breakdown result), annotate immediately.
+  const isFirstRender = useRef(tokens !== null || skipInitialAnnotation === true)
 
   // Auto-annotate after the user stops typing; skip on initial mount so
   // pre-existing tokens (loaded from DB) are never clobbered.
