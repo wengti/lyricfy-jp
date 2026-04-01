@@ -34,6 +34,8 @@ export default function LyricsPage() {
   const manualLinesMap = useRef<Map<string, LrcLine[]>>(new Map())
   const [selectedPhrase, setSelectedPhrase] = useState<string | null>(null)
   const [autoScroll, setAutoScroll] = useState(true)
+  const [controlLoading, setControlLoading] = useState(false)
+  const [scopeError, setScopeError] = useState(false)
   const [syncedUpgrade, setSyncedUpgrade] = useState<{ lines: LrcLine[] } | null>(null)
   const [acceptingUpgrade, setAcceptingUpgrade] = useState(false)
   const [upgradedSyncLines, setUpgradedSyncLines] = useState<LrcLine[] | null>(null)
@@ -81,6 +83,20 @@ export default function LyricsPage() {
     activeLyricsResult?.synced,
   )
   const { addEntry } = useDictionary()
+
+  async function handlePlaybackControl(action: 'play' | 'pause' | 'next' | 'previous') {
+    setControlLoading(true)
+    try {
+      const res = await fetch('/api/spotify/playback-control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      })
+      if (res.status === 403) setScopeError(true)
+    } finally {
+      setControlLoading(false)
+    }
+  }
 
   // Restore per-song manual lines (or null) when track changes
   useEffect(() => {
@@ -294,7 +310,13 @@ export default function LyricsPage() {
 
       {/* Now Playing Banner */}
       {connected && playing && (
-        <NowPlayingBanner playing={playing} seekVersion={seekVersion} />
+        <NowPlayingBanner
+          playing={playing}
+          seekVersion={seekVersion}
+          onControl={handlePlaybackControl}
+          controlLoading={controlLoading}
+          scopeError={scopeError}
+        />
       )}
 
       {/* No song playing */}

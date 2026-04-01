@@ -1,12 +1,18 @@
 import Image from 'next/image'
+import { SkipBack, SkipForward, Play, Pause } from 'lucide-react'
 import type { NowPlayingState } from '@/types/spotify'
+
+type PlaybackAction = 'play' | 'pause' | 'next' | 'previous'
 
 interface Props {
   playing: NowPlayingState
   seekVersion: number
+  onControl: (action: PlaybackAction) => Promise<void>
+  controlLoading: boolean
+  scopeError: boolean
 }
 
-export default function NowPlayingBanner({ playing, seekVersion }: Props) {
+export default function NowPlayingBanner({ playing, seekVersion, onControl, controlLoading, scopeError }: Props) {
   const { track, isPlaying, progressMs } = playing
   if (!track) return null
 
@@ -50,6 +56,41 @@ export default function NowPlayingBanner({ playing, seekVersion }: Props) {
             style={{ width: `${progressPct}%` }}
           />
         </div>
+        {scopeError && (
+          <p className="mt-1.5 text-xs text-amber-600 dark:text-amber-400">
+            <a href="/api/spotify/connect" className="underline hover:text-amber-700 dark:hover:text-amber-300">
+              Reconnect Spotify
+            </a>
+            {' '}to enable playback controls.
+          </p>
+        )}
+      </div>
+      {/* Playback controls */}
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          onClick={() => onControl('previous')}
+          disabled={controlLoading}
+          aria-label="Previous track"
+          className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+        >
+          <SkipBack size={18} />
+        </button>
+        <button
+          onClick={() => onControl(isPlaying ? 'pause' : 'play')}
+          disabled={controlLoading}
+          aria-label={isPlaying ? 'Pause' : 'Play'}
+          className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+        >
+          {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+        </button>
+        <button
+          onClick={() => onControl('next')}
+          disabled={controlLoading}
+          aria-label="Next track"
+          className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+        >
+          <SkipForward size={18} />
+        </button>
       </div>
     </div>
   )
