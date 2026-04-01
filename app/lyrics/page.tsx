@@ -500,7 +500,11 @@ export default function LyricsPage() {
       {!autoScroll && playing && (
         <button
           onClick={() => setAutoScroll(true)}
-          className="fixed bottom-6 right-6 flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg transition-colors hover:bg-indigo-700"
+          className={`fixed flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg transition-colors hover:bg-indigo-700 ${
+            !bannerVisible && !selectedPhrase
+              ? 'bottom-24 right-4 sm:bottom-6 sm:right-6'
+              : 'bottom-6 right-6'
+          }`}
         >
           <Navigation size={15} />
           Sync lyrics
