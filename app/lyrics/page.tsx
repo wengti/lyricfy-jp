@@ -303,7 +303,7 @@ export default function LyricsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className={`mx-auto max-w-2xl px-4 py-8 ${playing && !bannerVisible && !selectedPhrase ? 'pb-28' : ''}`}>
       {/* Spotify status messages */}
       {spotifyConnected && (
         <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300">
