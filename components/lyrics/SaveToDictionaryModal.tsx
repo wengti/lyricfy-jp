@@ -198,9 +198,9 @@ export default function SaveToDictionaryModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl dark:bg-gray-900">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b px-6 py-4 dark:border-gray-700">
+      <div className="flex w-full max-w-md flex-col max-h-[85vh] rounded-2xl bg-white shadow-xl dark:bg-gray-900">
+        {/* Header — always visible */}
+        <div className="flex-none flex items-center justify-between border-b px-6 py-4 dark:border-gray-700">
           <h2 className="font-semibold text-gray-900 dark:text-gray-100">Save to Dictionary</h2>
           <button onClick={onClose} className="rounded p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
             <X size={18} />
@@ -209,91 +209,95 @@ export default function SaveToDictionaryModal({
 
         {mode === 'single' ? (
           /* ── Single-word form ── */
-          <form onSubmit={handleSaveSingle} className="space-y-4 px-6 py-5">
-            {error && (
-              <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">
-                {error}
-              </div>
-            )}
+          <form onSubmit={handleSaveSingle} className="flex flex-1 flex-col overflow-hidden">
+            {/* Scrollable fields */}
+            <div className="flex-1 overflow-y-auto space-y-4 px-6 py-5">
+              {error && (
+                <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                  {error}
+                </div>
+              )}
 
-            {/* Selected phrase */}
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Phrase</label>
-              <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
-                {phrase}
+              {/* Selected phrase */}
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Phrase</label>
+                <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
+                  {phrase}
+                </div>
               </div>
-            </div>
 
-            {/* AI action buttons */}
-            <div className="flex gap-2">
-              {!enriched && (
+              {/* AI action buttons */}
+              <div className="flex gap-2">
+                {!enriched && (
+                  <button
+                    type="button"
+                    onClick={handleEnrich}
+                    disabled={enriching || breakdownLoading}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-60 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50"
+                  >
+                    {enriching && <Loader2 size={14} className="animate-spin" />}
+                    {enriching ? 'Looking up…' : 'Auto-fill with AI'}
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={handleEnrich}
+                  onClick={handleBreakdown}
                   disabled={enriching || breakdownLoading}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-60 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-violet-200 bg-violet-50 py-2 text-sm font-medium text-violet-700 hover:bg-violet-100 disabled:opacity-60 dark:border-violet-800 dark:bg-violet-900/30 dark:text-violet-300 dark:hover:bg-violet-900/50"
                 >
-                  {enriching && <Loader2 size={14} className="animate-spin" />}
-                  {enriching ? 'Looking up…' : 'Auto-fill with AI'}
+                  {breakdownLoading && <Loader2 size={14} className="animate-spin" />}
+                  {breakdownLoading ? 'Analyzing…' : 'Break down phrase'}
                 </button>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Hiragana <span className="text-red-500">*</span>
+                </label>
+                <input required value={hiragana} onChange={(e) => setHiragana(e.target.value)} className={inputClass} />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  English <span className="text-red-500">*</span>
+                </label>
+                <input required value={english} onChange={(e) => setEnglish(e.target.value)} className={inputClass} />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Example sentence (Japanese)
+                </label>
+                <textarea
+                  rows={2}
+                  value={exampleJapanese}
+                  onChange={(e) => setExampleJapanese(e.target.value)}
+                  placeholder="例文..."
+                  className={`${inputClass} resize-none`}
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Example sentence (English)
+                </label>
+                <textarea
+                  rows={2}
+                  value={exampleEnglish}
+                  onChange={(e) => setExampleEnglish(e.target.value)}
+                  placeholder="Translation of the example..."
+                  className={`${inputClass} resize-none`}
+                />
+              </div>
+
+              {sourceSong && (
+                <p className="text-xs text-gray-400 dark:text-gray-500">
+                  From: <em>{sourceSong}</em>
+                  {sourceArtist && ` — ${sourceArtist}`}
+                </p>
               )}
-              <button
-                type="button"
-                onClick={handleBreakdown}
-                disabled={enriching || breakdownLoading}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-violet-200 bg-violet-50 py-2 text-sm font-medium text-violet-700 hover:bg-violet-100 disabled:opacity-60 dark:border-violet-800 dark:bg-violet-900/30 dark:text-violet-300 dark:hover:bg-violet-900/50"
-              >
-                {breakdownLoading && <Loader2 size={14} className="animate-spin" />}
-                {breakdownLoading ? 'Analyzing…' : 'Break down phrase'}
-              </button>
             </div>
 
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Hiragana <span className="text-red-500">*</span>
-              </label>
-              <input required value={hiragana} onChange={(e) => setHiragana(e.target.value)} className={inputClass} />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                English <span className="text-red-500">*</span>
-              </label>
-              <input required value={english} onChange={(e) => setEnglish(e.target.value)} className={inputClass} />
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Example sentence (Japanese)
-              </label>
-              <textarea
-                rows={2}
-                value={exampleJapanese}
-                onChange={(e) => setExampleJapanese(e.target.value)}
-                placeholder="例文..."
-                className={`${inputClass} resize-none`}
-              />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Example sentence (English)
-              </label>
-              <textarea
-                rows={2}
-                value={exampleEnglish}
-                onChange={(e) => setExampleEnglish(e.target.value)}
-                placeholder="Translation of the example..."
-                className={`${inputClass} resize-none`}
-              />
-            </div>
-
-            {sourceSong && (
-              <p className="text-xs text-gray-400 dark:text-gray-500">
-                From: <em>{sourceSong}</em>
-                {sourceArtist && ` — ${sourceArtist}`}
-              </p>
-            )}
-
-            <div className="flex justify-end gap-3 pt-2">
+            {/* Sticky footer */}
+            <div className="flex-none flex justify-end gap-3 border-t px-6 py-4 dark:border-gray-700">
               <button type="button" onClick={onClose} className="rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800">
                 Cancel
               </button>
@@ -309,27 +313,28 @@ export default function SaveToDictionaryModal({
           </form>
         ) : (
           /* ── Breakdown review ── */
-          <div className="flex flex-col px-6 py-5">
-            {error && (
-              <div className="mb-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">
-                {error}
+          <div className="flex flex-1 flex-col overflow-hidden">
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto space-y-3 px-6 py-5">
+              {error && (
+                <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                  {error}
+                </div>
+              )}
+
+              {/* Original phrase */}
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Original phrase</label>
+                <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
+                  {phrase}
+                </div>
               </div>
-            )}
 
-            {/* Original phrase */}
-            <div className="mb-3">
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Original phrase</label>
-              <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
-                {phrase}
-              </div>
-            </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                AI found <strong>{breakdownItems.length}</strong> vocab. Select which to save — all fields are editable.
+              </p>
 
-            <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
-              AI found <strong>{breakdownItems.length}</strong> vocab. Select which to save — all fields are editable.
-            </p>
-
-            {/* Scrollable card list */}
-            <div className="max-h-[55vh] space-y-3 overflow-y-auto pr-1">
+              {/* Card list */}
               {breakdownItems.map((item, i) => (
                 <div
                   key={i}
@@ -407,8 +412,8 @@ export default function SaveToDictionaryModal({
               ))}
             </div>
 
-            {/* Footer */}
-            <div className="mt-4 flex items-center justify-between border-t pt-4 dark:border-gray-700">
+            {/* Sticky footer */}
+            <div className="flex-none flex items-center justify-between border-t px-6 py-4 dark:border-gray-700">
               <button
                 type="button"
                 onClick={() => { setMode('single'); setError(null) }}
