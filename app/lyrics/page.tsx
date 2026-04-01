@@ -10,6 +10,7 @@ import { useDictionary } from '@/hooks/useDictionary'
 import { useIsAdmin } from '@/hooks/useIsAdmin'
 import { detectScript } from '@/lib/utils/japanese'
 import NowPlayingBanner from '@/components/lyrics/NowPlayingBanner'
+import MiniPlayer from '@/components/lyrics/MiniPlayer'
 import LyricsDisplay from '@/components/lyrics/LyricsDisplay'
 import ManualLyricsInput from '@/components/lyrics/ManualLyricsInput'
 import SaveToDictionaryModal from '@/components/lyrics/SaveToDictionaryModal'
@@ -36,6 +37,8 @@ export default function LyricsPage() {
   const [autoScroll, setAutoScroll] = useState(true)
   const [controlLoading, setControlLoading] = useState(false)
   const [scopeError, setScopeError] = useState(false)
+  const [bannerVisible, setBannerVisible] = useState(true)
+  const bannerRef = useRef<HTMLDivElement>(null)
   const [syncedUpgrade, setSyncedUpgrade] = useState<{ lines: LrcLine[] } | null>(null)
   const [acceptingUpgrade, setAcceptingUpgrade] = useState(false)
   const [upgradedSyncLines, setUpgradedSyncLines] = useState<LrcLine[] | null>(null)
@@ -114,6 +117,21 @@ export default function LyricsPage() {
     setUpgradedSyncLines(null)
     setLrclibChecked(false)
   }, [track?.id])
+
+  // Show mini player when banner scrolls out of view.
+  // Depends on track ID so the observer re-attaches whenever the banner div
+  // mounts (i.e. when playing goes from null to a track).
+  useEffect(() => {
+    const el = bannerRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => setBannerVisible(entry.isIntersecting),
+      { threshold: 0 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playing?.track?.id])
 
   // Disable auto-scroll when user manually scrolls
   useEffect(() => {
@@ -310,13 +328,15 @@ export default function LyricsPage() {
 
       {/* Now Playing Banner */}
       {connected && playing && (
-        <NowPlayingBanner
-          playing={playing}
-          seekVersion={seekVersion}
-          onControl={handlePlaybackControl}
-          controlLoading={controlLoading}
-          scopeError={scopeError}
-        />
+        <div ref={bannerRef}>
+          <NowPlayingBanner
+            playing={playing}
+            seekVersion={seekVersion}
+            onControl={handlePlaybackControl}
+            controlLoading={controlLoading}
+            scopeError={scopeError}
+          />
+        </div>
       )}
 
       {/* No song playing */}
@@ -446,6 +466,15 @@ export default function LyricsPage() {
           sourceArtist={track?.artist}
           onClose={() => setSelectedPhrase(null)}
           onSave={addEntry}
+        />
+      )}
+
+      {/* Mini player — shown when now-playing banner is scrolled out of view */}
+      {playing && !bannerVisible && !selectedPhrase && (
+        <MiniPlayer
+          playing={playing}
+          onControl={handlePlaybackControl}
+          controlLoading={controlLoading}
         />
       )}
 
