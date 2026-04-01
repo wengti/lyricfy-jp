@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Loader2 } from 'lucide-react'
+import { X, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
 import type { DictionaryEntryInsert } from '@/types/database'
 import type { BreakdownWord } from '@/types/ai'
 
@@ -189,6 +189,7 @@ export default function SaveToDictionaryModal({
   }
 
   const selectedCount = breakdownItems.filter((i) => i.selected).length
+  const [collapsed, setCollapsed] = useState(false)
 
   const inputClass =
     'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-indigo-800'
@@ -196,15 +197,50 @@ export default function SaveToDictionaryModal({
   const cardInputClass =
     'w-full rounded border border-gray-300 px-2 py-1 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-indigo-800'
 
+  if (collapsed) {
+    return (
+      <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+        <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+          <span className="max-w-50 truncate text-sm font-medium text-gray-700 dark:text-gray-300">
+            {phrase}
+          </span>
+          <button
+            onClick={() => setCollapsed(false)}
+            className="rounded p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            title="Expand"
+          >
+            <ChevronUp size={16} />
+          </button>
+          <button
+            onClick={onClose}
+            className="rounded p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            title="Dismiss"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="flex w-full max-w-md flex-col max-h-[85vh] rounded-2xl bg-white shadow-xl dark:bg-gray-900">
         {/* Header — always visible */}
         <div className="flex-none flex items-center justify-between border-b px-6 py-4 dark:border-gray-700">
           <h2 className="font-semibold text-gray-900 dark:text-gray-100">Save to Dictionary</h2>
-          <button onClick={onClose} className="rounded p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCollapsed(true)}
+              className="rounded p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              title="Collapse"
+            >
+              <ChevronDown size={18} />
+            </button>
+            <button onClick={onClose} className="rounded p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         {mode === 'single' ? (
