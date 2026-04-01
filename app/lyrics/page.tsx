@@ -101,6 +101,20 @@ export default function LyricsPage() {
     }
   }
 
+  async function handleSeek(positionMs: number) {
+    setControlLoading(true)
+    try {
+      const res = await fetch('/api/spotify/playback-control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'seek', position_ms: positionMs }),
+      })
+      if (res.status === 403) setScopeError(true)
+    } finally {
+      setControlLoading(false)
+    }
+  }
+
   // Restore per-song manual lines (or null) when track changes
   useEffect(() => {
     conversionControllerRef.current?.abort()
@@ -333,6 +347,7 @@ export default function LyricsPage() {
             playing={playing}
             seekVersion={seekVersion}
             onControl={handlePlaybackControl}
+            onSeek={handleSeek}
             controlLoading={controlLoading}
             scopeError={scopeError}
           />
@@ -473,7 +488,9 @@ export default function LyricsPage() {
       {playing && !bannerVisible && !selectedPhrase && (
         <MiniPlayer
           playing={playing}
+          seekVersion={seekVersion}
           onControl={handlePlaybackControl}
+          onSeek={handleSeek}
           controlLoading={controlLoading}
         />
       )}

@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { SkipBack, SkipForward, Play, Pause } from 'lucide-react'
+import SeekBar from '@/components/lyrics/SeekBar'
 import type { NowPlayingState } from '@/types/spotify'
 
 type PlaybackAction = 'play' | 'pause' | 'next' | 'previous'
@@ -10,13 +11,12 @@ interface Props {
   onControl: (action: PlaybackAction) => Promise<void>
   controlLoading: boolean
   scopeError: boolean
+  onSeek: (positionMs: number) => void
 }
 
-export default function NowPlayingBanner({ playing, seekVersion, onControl, controlLoading, scopeError }: Props) {
+export default function NowPlayingBanner({ playing, seekVersion, onControl, controlLoading, scopeError, onSeek }: Props) {
   const { track, isPlaying, progressMs } = playing
   if (!track) return null
-
-  const progressPct = Math.min((progressMs / track.durationMs) * 100, 100)
 
   return (
     <div className="mb-6 flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
@@ -48,14 +48,13 @@ export default function NowPlayingBanner({ playing, seekVersion, onControl, cont
           <p className="truncate font-semibold text-gray-900 dark:text-gray-100">{track.name}</p>
         </div>
         <p className="truncate text-sm text-gray-500 dark:text-gray-400">{track.artist}</p>
-        {/* Progress bar — keyed by track.id so it remounts instantly on song change */}
-        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
-          <div
-            key={`${track.id}-${seekVersion}`}
-            className="h-full rounded-full bg-indigo-400 transition-all duration-1000"
-            style={{ width: `${progressPct}%` }}
-          />
-        </div>
+        <SeekBar
+          progressMs={progressMs}
+          durationMs={track.durationMs}
+          seekVersion={seekVersion}
+          onSeek={onSeek}
+          className="mt-2"
+        />
         {scopeError && (
           <p className="mt-1.5 text-xs text-amber-600 dark:text-amber-400">
             <a href="/api/spotify/connect" className="underline hover:text-amber-700 dark:hover:text-amber-300">
