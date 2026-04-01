@@ -422,7 +422,7 @@ export default function SaveToDictionaryModal({
                       <div className="flex-1 space-y-2">
                         {/* Furigana preview + refresh button */}
                         <div className="flex items-center justify-center gap-2 pb-1">
-                          <div className="text-xl">
+                          <div className="text-xl text-gray-900 dark:text-gray-100">
                             {item.enriching ? (
                               <Loader2 size={18} className="animate-spin text-violet-500" />
                             ) : (
