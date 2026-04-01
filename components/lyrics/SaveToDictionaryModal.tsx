@@ -28,6 +28,7 @@ export default function SaveToDictionaryModal({
   onSave,
 }: Props) {
   // Single-word mode state
+  const [editablePhrase, setEditablePhrase] = useState(phrase)
   const [hiragana, setHiragana] = useState('')
   const [english, setEnglish] = useState('')
   const [exampleJapanese, setExampleJapanese] = useState('')
@@ -52,7 +53,7 @@ export default function SaveToDictionaryModal({
       const res = await fetch('/api/ai/enrich-word', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word: phrase }),
+        body: JSON.stringify({ word: editablePhrase }),
       })
       if (!res.ok) throw new Error('Enrichment failed')
       const data = await res.json()
@@ -75,7 +76,7 @@ export default function SaveToDictionaryModal({
       const res = await fetch('/api/ai/breakdown-phrase', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phrase }),
+        body: JSON.stringify({ phrase: editablePhrase }),
       })
       if (!res.ok) {
         const data = await res.json()
@@ -146,7 +147,7 @@ export default function SaveToDictionaryModal({
     setError(null)
     try {
       await onSave({
-        japanese_text: phrase,
+        japanese_text: editablePhrase,
         hiragana,
         english_translation: english,
         example_japanese: exampleJapanese || null,
@@ -208,7 +209,7 @@ export default function SaveToDictionaryModal({
       <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
         <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-lg dark:border-gray-700 dark:bg-gray-900">
           <span className="max-w-50 truncate text-sm font-medium text-gray-700 dark:text-gray-300">
-            {phrase}
+            {editablePhrase}
           </span>
           <button
             onClick={() => setCollapsed(false)}
@@ -263,9 +264,11 @@ export default function SaveToDictionaryModal({
               {/* Selected phrase */}
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Phrase</label>
-                <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
-                  {phrase}
-                </div>
+                <input
+                  value={editablePhrase}
+                  onChange={(e) => setEditablePhrase(e.target.value)}
+                  className={inputClass}
+                />
               </div>
 
               {/* AI action buttons */}
@@ -368,7 +371,7 @@ export default function SaveToDictionaryModal({
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Original phrase</label>
                 <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-800">
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{phrase}</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{editablePhrase}</p>
                   {phraseTranslation && (
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{phraseTranslation}</p>
                   )}
