@@ -52,7 +52,7 @@ export default function LyricsPage() {
       ? { lines: manualLines, synced: false, notFound: false, isJapanese: true, wasRomaji: false, source: 'manual' as const }
       : lyricsResult
     if (upgradedSyncLines && base) {
-      return { ...base, lines: upgradedSyncLines, synced: true }
+      return { ...base, lines: upgradedSyncLines, synced: true, source: 'lrclib' as const }
     }
     return base
   }, [manualLines, lyricsResult, upgradedSyncLines])
