@@ -155,6 +155,7 @@ export default function BrowseDetailClient({
 
     if (controller.signal.aborted) return
 
+    setShowReplace(false)
     setRetranslating(true)
     try {
       const res = await fetch('/api/ai/furigana', {
@@ -191,8 +192,6 @@ export default function BrowseDetailClient({
       if (!controller.signal.aborted) setRetranslating(false)
     }
 
-    if (controller.signal.aborted) return
-    setShowReplace(false)
   }
 
   function cancelManualSubmit() {
