@@ -18,6 +18,15 @@ export interface EnrichedWord {
   example_english: string
 }
 
+/** A single vocab item returned by the phrase-breakdown AI */
+export interface BreakdownWord {
+  word: string
+  hiragana: string
+  english_translation: string
+  example_japanese: string
+  example_english: string
+}
+
 /** A single line from an LRC file */
 export interface LrcLine {
   ms: number   // Timestamp in milliseconds (0 for unsynced lyrics)
