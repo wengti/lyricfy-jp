@@ -34,7 +34,6 @@ export default function SaveToDictionaryModal({
   const [exampleJapanese, setExampleJapanese] = useState('')
   const [exampleEnglish, setExampleEnglish] = useState('')
   const [enriching, setEnriching] = useState(false)
-  const [enriched, setEnriched] = useState(false)
 
   // Breakdown mode state
   const [mode, setMode] = useState<'single' | 'breakdown'>('single')
@@ -61,7 +60,6 @@ export default function SaveToDictionaryModal({
       setEnglish(data.english_translation ?? '')
       setExampleJapanese(data.example_japanese ?? '')
       setExampleEnglish(data.example_english ?? '')
-      setEnriched(true)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Enrichment failed')
     } finally {
@@ -273,17 +271,15 @@ export default function SaveToDictionaryModal({
 
               {/* AI action buttons */}
               <div className="flex gap-2">
-                {!enriched && (
-                  <button
-                    type="button"
-                    onClick={handleEnrich}
-                    disabled={enriching || breakdownLoading}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-60 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50"
-                  >
-                    {enriching && <Loader2 size={14} className="animate-spin" />}
-                    {enriching ? 'Looking up…' : 'Auto-fill with AI'}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={handleEnrich}
+                  disabled={enriching || breakdownLoading}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-60 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50"
+                >
+                  {enriching && <Loader2 size={14} className="animate-spin" />}
+                  {enriching ? 'Looking up…' : 'Auto-fill with AI'}
+                </button>
                 <button
                   type="button"
                   onClick={handleBreakdown}
