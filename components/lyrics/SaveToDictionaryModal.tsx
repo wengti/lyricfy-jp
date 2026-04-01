@@ -27,6 +27,11 @@ export default function SaveToDictionaryModal({
   onClose,
   onSave,
 }: Props) {
+  // Freeze source metadata at the moment the modal opens
+  const [frozenSourceSong] = useState(sourceSong)
+  const [frozenSourceArtist] = useState(sourceArtist)
+  const [frozenSourceLyricsLine] = useState(sourceLyricsLine)
+
   // Single-word mode state
   const [editablePhrase, setEditablePhrase] = useState(phrase)
   const [hiragana, setHiragana] = useState('')
@@ -150,9 +155,9 @@ export default function SaveToDictionaryModal({
         english_translation: english,
         example_japanese: exampleJapanese || null,
         example_english: exampleEnglish || null,
-        source_song: sourceSong ?? null,
-        source_artist: sourceArtist ?? null,
-        source_lyrics_line: sourceLyricsLine ?? null,
+        source_song: frozenSourceSong ?? null,
+        source_artist: frozenSourceArtist ?? null,
+        source_lyrics_line: frozenSourceLyricsLine ?? null,
         tags: [],
       })
       onClose()
@@ -176,9 +181,9 @@ export default function SaveToDictionaryModal({
           english_translation: item.english_translation,
           example_japanese: item.example_japanese || null,
           example_english: item.example_english || null,
-          source_song: sourceSong ?? null,
-          source_artist: sourceArtist ?? null,
-          source_lyrics_line: sourceLyricsLine ?? null,
+          source_song: frozenSourceSong ?? null,
+          source_artist: frozenSourceArtist ?? null,
+          source_lyrics_line: frozenSourceLyricsLine ?? null,
           tags: [],
         })
       }
@@ -329,10 +334,10 @@ export default function SaveToDictionaryModal({
                 />
               </div>
 
-              {sourceSong && (
+              {frozenSourceSong && (
                 <p className="text-xs text-gray-400 dark:text-gray-500">
-                  From: <em>{sourceSong}</em>
-                  {sourceArtist && ` — ${sourceArtist}`}
+                  From: <em>{frozenSourceSong}</em>
+                  {frozenSourceArtist && ` — ${frozenSourceArtist}`}
                 </p>
               )}
             </div>
@@ -500,9 +505,9 @@ export default function SaveToDictionaryModal({
               >
                 Back
               </button>
-              {sourceSong && (
+              {frozenSourceSong && (
                 <p className="text-xs text-gray-400 dark:text-gray-500">
-                  From: <em>{sourceSong}</em>
+                  From: <em>{frozenSourceSong}</em>
                 </p>
               )}
               <button
