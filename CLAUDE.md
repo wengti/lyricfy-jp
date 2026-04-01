@@ -169,6 +169,7 @@ Rules:
 - One commit per logical feature or fix — don't batch unrelated changes
 - Keep the subject line under 72 characters
 - No trailing period
+- After completing a task, summarize the changes made and immediately proceed to commit and push — do not ask for permission first
 
 ---
 
