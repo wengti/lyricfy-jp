@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import LyricsLine from './LyricsLine'
 import type { LrcLine, TranslatedLine } from '@/types/ai'
 
@@ -14,6 +14,7 @@ interface Props {
   progressMs: number
   autoScroll: boolean
   onSelectPhrase?: (text: string, lineIndex: number) => void
+  onSeekToLine?: (ms: number) => void
 }
 
 const SOURCE_BADGE: Record<string, Record<string, { label: string; title: string; cls: string }>> = {
@@ -43,8 +44,10 @@ export default function LyricsDisplay({
   progressMs,
   autoScroll,
   onSelectPhrase,
+  onSeekToLine,
 }: Props) {
   const [showTranslation, setShowTranslation] = useState(true)
+  const mouseDownLineIndexRef = useRef<number>(-1)
 
   // Find the active line index based on Spotify progress_ms
   const activeIndex = useMemo(() => {
@@ -57,11 +60,13 @@ export default function LyricsDisplay({
     return idx
   }, [lines, synced, progressMs])
 
-  function handleMouseDown() {
+  function handleMouseDown(e: React.MouseEvent) {
     // Hide furigana the moment the user starts dragging so the selection never touches it
     document.querySelectorAll<HTMLElement>('rt, rp').forEach((el) => {
       el.style.visibility = 'hidden'
     })
+    const lineEl = (e.target as Element).closest('[data-line-index]')
+    mouseDownLineIndexRef.current = lineEl ? Number(lineEl.getAttribute('data-line-index')) : -1
   }
 
   function handleMouseUp() {
@@ -73,8 +78,18 @@ export default function LyricsDisplay({
       el.style.visibility = ''
     })
 
-    if (!onSelectPhrase || !text) return
-    onSelectPhrase(text, activeIndex)
+    if (onSelectPhrase && text) {
+      onSelectPhrase(text, activeIndex)
+      mouseDownLineIndexRef.current = -1
+      return
+    }
+
+    // Plain click on a synced line → seek to that line's timestamp
+    const idx = mouseDownLineIndexRef.current
+    mouseDownLineIndexRef.current = -1
+    if (!text && synced && onSeekToLine && idx >= 0 && lines[idx]?.ms !== undefined) {
+      onSeekToLine(lines[idx].ms)
+    }
   }
 
   return (
@@ -124,14 +139,15 @@ export default function LyricsDisplay({
       {/* Lines */}
       <div className="space-y-1" onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}>
         {lines.map((line, i) => (
-          <LyricsLine
-            key={i}
-            line={translatedLines?.[i] ?? null}
-            rawText={line.text}
-            isActive={synced ? i === activeIndex : false}
-            showTranslation={showTranslation}
-            autoScroll={autoScroll}
-          />
+          <div key={i} data-line-index={i} className={synced && onSeekToLine ? 'cursor-pointer' : ''}>
+            <LyricsLine
+              line={translatedLines?.[i] ?? null}
+              rawText={line.text}
+              isActive={synced ? i === activeIndex : false}
+              showTranslation={showTranslation}
+              autoScroll={autoScroll}
+            />
+          </div>
         ))}
       </div>
     </div>

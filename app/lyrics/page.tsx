@@ -470,6 +470,7 @@ export default function LyricsPage() {
           progressMs={progressMs}
           autoScroll={autoScroll}
           onSelectPhrase={activeLyricsResult.isJapanese ? (phrase) => setSelectedPhrase(phrase) : undefined}
+          onSeekToLine={activeLyricsResult.synced ? handleSeek : undefined}
         />
       )}
 
