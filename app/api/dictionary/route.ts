@@ -14,11 +14,11 @@ const insertSchema = z.object({
   japanese_text: z.string().min(1).max(200),
   hiragana: z.string().min(1).max(400),
   english_translation: z.string().min(1).max(500),
-  example_japanese: z.string().max(500).optional(),
-  example_english: z.string().max(500).optional(),
-  source_song: z.string().max(200).optional(),
-  source_artist: z.string().max(200).optional(),
-  source_lyrics_line: z.string().max(500).optional(),
+  example_japanese: z.string().max(500).optional().nullable(),
+  example_english: z.string().max(500).optional().nullable(),
+  source_song: z.string().max(200).optional().nullable(),
+  source_artist: z.string().max(200).optional().nullable(),
+  source_lyrics_line: z.string().max(500).optional().nullable(),
   tags: z.array(z.string().max(50)).max(10).optional(),
 })
 
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
   const body = await request.json()
   const parsed = insertSchema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
+    return NextResponse.json({ error: parsed.error.issues.map(i => i.message).join(', ') }, { status: 422 })
   }
 
   const { data, error } = await supabase
