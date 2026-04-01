@@ -81,7 +81,7 @@ export default function BrowsePage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by song, artist, or lyrics…"
-          className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:border-indigo-500"
+          className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-base text-gray-900 placeholder-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:border-indigo-500"
         />
       </div>
 
