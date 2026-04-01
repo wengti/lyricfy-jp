@@ -18,6 +18,8 @@ const schema = z.object({
   syncedUpgrade: z.boolean().optional(),  // admin accepting a newly-synced lrclib version
   timestamps: z.array(z.number()).optional(), // ms timestamps from the original synced LRC
   synced: z.boolean().optional(),             // whether the original lyrics were synced
+  retranslate: z.boolean().optional(),        // re-running AI on existing lyrics (not a new manual paste)
+  originalSource: z.string().optional(),      // source of the current lyrics, preserved on retranslate
 })
 
 export async function POST(request: Request) {
@@ -27,7 +29,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
   }
 
-  const { lines, track, artist, force, wasRomaji, syncedUpgrade, timestamps, synced } = parsed.data
+  const { lines, track, artist, force, wasRomaji, syncedUpgrade, timestamps, synced, retranslate, originalSource } = parsed.data
 
   // Force-overwrite and synced-upgrade are admin-only actions
   if (force || syncedUpgrade) {
@@ -68,7 +70,14 @@ export async function POST(request: Request) {
     // Only cache when at least one line has furigana tokens — guards against
     // saving empty results for non-Japanese content or stale/mismatched lines.
     if (track && artist && all.some((l) => l.tokens.length > 0)) {
-      const saveSource = syncedUpgrade ? 'lrclib' : (force && wasRomaji) ? 'manual-romaji' : wasRomaji ? 'lrclib-romaji' : force ? 'manual' : 'lrclib'
+      // Retranslate preserves the original lyrics source so the badge and sync
+      // state remain correct. Manual paste (force without retranslate) uses 'manual'.
+      const saveSource = syncedUpgrade ? 'lrclib'
+        : (force && wasRomaji) ? 'manual-romaji'
+        : wasRomaji ? 'lrclib-romaji'
+        : retranslate ? ((originalSource as 'lrclib' | 'lrclib-romaji' | 'manual' | 'manual-romaji') ?? 'lrclib')
+        : force ? 'manual'
+        : 'lrclib'
       await setCachedTranslation(
         track, artist, all, lines,
         saveSource,

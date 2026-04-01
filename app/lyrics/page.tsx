@@ -238,6 +238,8 @@ export default function LyricsPage() {
           track: track.name,
           artist: track.artist,
           force: true,
+          retranslate: true,
+          originalSource: activeLyricsResult.source,
           timestamps: activeLyricsResult.lines.map((l) => l.ms),
           synced: activeLyricsResult.synced,
         }),
