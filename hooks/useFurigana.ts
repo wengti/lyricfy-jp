@@ -25,6 +25,7 @@ export function useFurigana(
     if (!lines || lines.length === 0) {
       setTranslatedLines(null)
       prevLinesRef.current = lines
+      prevTrackRef.current = { track, artist }
       return
     }
 
