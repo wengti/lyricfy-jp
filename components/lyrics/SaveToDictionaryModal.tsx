@@ -23,6 +23,8 @@ export default function SaveToDictionaryModal({
 }: Props) {
   const [hiragana, setHiragana] = useState('')
   const [english, setEnglish] = useState('')
+  const [exampleJapanese, setExampleJapanese] = useState('')
+  const [exampleEnglish, setExampleEnglish] = useState('')
   const [enriching, setEnriching] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,6 +43,8 @@ export default function SaveToDictionaryModal({
       const data = await res.json()
       setHiragana(data.hiragana ?? '')
       setEnglish(data.english_translation ?? '')
+      setExampleJapanese(data.example_japanese ?? '')
+      setExampleEnglish(data.example_english ?? '')
       setEnriched(true)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Enrichment failed')
@@ -59,8 +63,8 @@ export default function SaveToDictionaryModal({
         japanese_text: phrase,
         hiragana,
         english_translation: english,
-        example_japanese: null,
-        example_english: null,
+        example_japanese: exampleJapanese || null,
+        example_english: exampleEnglish || null,
         source_song: sourceSong ?? null,
         source_artist: sourceArtist ?? null,
         source_lyrics_line: sourceLyricsLine ?? null,
@@ -130,6 +134,31 @@ export default function SaveToDictionaryModal({
               value={english}
               onChange={(e) => setEnglish(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-indigo-800"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Example sentence (Japanese)
+            </label>
+            <textarea
+              rows={2}
+              value={exampleJapanese}
+              onChange={(e) => setExampleJapanese(e.target.value)}
+              placeholder="例文..."
+              className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-indigo-800"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Example sentence (English)
+            </label>
+            <textarea
+              rows={2}
+              value={exampleEnglish}
+              onChange={(e) => setExampleEnglish(e.target.value)}
+              placeholder="Translation of the example..."
+              className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-indigo-800"
             />
           </div>
 
