@@ -150,3 +150,43 @@ create table public.lyrics_cache (
   created_at       timestamptz not null default now(),
   primary key (track_name, artist)
 );
+
+-- ============================================================
+-- search_lyrics_cache(keyword text)
+-- Full-text search over track_name, artist, and the
+-- translated_lines JSONB cast to text.
+-- Returns only the columns needed by the browse search UI.
+-- Must also be run in the Supabase SQL editor.
+-- ============================================================
+create or replace function public.search_lyrics_cache(keyword text)
+returns table (
+  track_name text,
+  artist     text,
+  source     text,
+  synced     boolean
+)
+language sql
+security definer
+stable
+as $$
+  select
+    lc.track_name,
+    lc.artist,
+    case
+      when jsonb_typeof(lc.translated_lines) = 'array' then 'manual'
+      else lc.translated_lines->>'source'
+    end as source,
+    case
+      when jsonb_typeof(lc.translated_lines) = 'array'        then false
+      when lc.translated_lines->>'synced' is not null          then (lc.translated_lines->>'synced')::boolean
+      when lc.translated_lines->'timestamps' is not null       then true
+      when lc.translated_lines->>'source' = 'lrclib'           then true
+      else false
+    end as synced
+  from public.lyrics_cache lc
+  where lc.track_name ilike '%' || keyword || '%'
+     or lc.artist     ilike '%' || keyword || '%'
+     or lc.translated_lines::text ilike '%' || keyword || '%'
+  order by lc.track_name, lc.artist
+  limit 50;
+$$;

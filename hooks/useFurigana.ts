@@ -75,7 +75,8 @@ export function useFurigana(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         lines, track, artist, force: effectiveBust > 0,
-        ...(wasRomaji ? { wasRomaji: true, timestamps, synced } : {}),
+        ...(wasRomaji ? { wasRomaji: true, timestamps } : {}),
+        ...(synced !== undefined ? { synced } : {}),
       }),
     })
       .then((res) => {

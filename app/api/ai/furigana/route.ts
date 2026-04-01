@@ -73,7 +73,7 @@ export async function POST(request: Request) {
         track, artist, all, lines,
         saveSource,
         (wasRomaji || force || syncedUpgrade) ? timestamps : undefined,
-        (wasRomaji || force || syncedUpgrade) ? synced : undefined,
+        synced,
       )
     }
 

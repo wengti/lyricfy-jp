@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { BookOpen, CreditCard, Music, Settings, LogOut, Sun, Moon } from 'lucide-react'
+import { BookOpen, CreditCard, Library, Music, Settings, LogOut, Sun, Moon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTheme } from '@/contexts/ThemeContext'
 
 const NAV_LINKS = [
   { href: '/lyrics', label: 'Lyrics', icon: Music },
+  { href: '/browse', label: 'Browse', icon: Library },
   { href: '/dictionary', label: 'Dictionary', icon: BookOpen },
   { href: '/flashcards', label: 'Flashcards', icon: CreditCard },
 ]
