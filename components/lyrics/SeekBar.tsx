@@ -2,15 +2,23 @@
 
 import { useRef, useState } from 'react'
 
+function fmtMs(ms: number): string {
+  const total = Math.floor(ms / 1000)
+  const m = Math.floor(total / 60)
+  const s = total % 60
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
 interface Props {
   progressMs: number
   durationMs: number
   seekVersion: number
   onSeek: (positionMs: number) => void
+  showTime?: boolean
   className?: string
 }
 
-export default function SeekBar({ progressMs, durationMs, seekVersion, onSeek, className = '' }: Props) {
+export default function SeekBar({ progressMs, durationMs, seekVersion, onSeek, showTime = false, className = '' }: Props) {
   const trackRef = useRef<HTMLDivElement>(null)
   const [pendingMs, setPendingMs] = useState<number | null>(null)
 
@@ -69,6 +77,12 @@ export default function SeekBar({ progressMs, durationMs, seekVersion, onSeek, c
           style={{ left: `${pct}%` }}
         />
       </div>
+      {showTime && (
+        <div className="absolute -bottom-5 left-0 right-0 flex justify-between text-xs text-gray-400 dark:text-gray-500 pointer-events-none">
+          <span>{fmtMs(displayMs)}</span>
+          <span>{fmtMs(durationMs)}</span>
+        </div>
+      )}
     </div>
   )
 }

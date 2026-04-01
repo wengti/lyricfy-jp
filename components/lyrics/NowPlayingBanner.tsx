@@ -14,13 +14,6 @@ interface Props {
   onSeek: (positionMs: number) => void
 }
 
-function fmtMs(ms: number): string {
-  const total = Math.floor(ms / 1000)
-  const m = Math.floor(total / 60)
-  const s = total % 60
-  return `${m}:${String(s).padStart(2, '0')}`
-}
-
 export default function NowPlayingBanner({ playing, seekVersion, onControl, controlLoading, scopeError, onSeek }: Props) {
   const { track, isPlaying, progressMs } = playing
   if (!track) return null
@@ -60,12 +53,9 @@ export default function NowPlayingBanner({ playing, seekVersion, onControl, cont
           durationMs={track.durationMs}
           seekVersion={seekVersion}
           onSeek={onSeek}
-          className="mt-2"
+          showTime
+          className="mt-2 mb-5"
         />
-        <div className="mt-1 flex justify-between text-xs text-gray-400 dark:text-gray-500">
-          <span>{fmtMs(progressMs)}</span>
-          <span>{fmtMs(track.durationMs)}</span>
-        </div>
         {scopeError && (
           <p className="mt-1.5 text-xs text-amber-600 dark:text-amber-400">
             <a href="/api/spotify/connect" className="underline hover:text-amber-700 dark:hover:text-amber-300">
