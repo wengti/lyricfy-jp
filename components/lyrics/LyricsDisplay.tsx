@@ -139,13 +139,14 @@ export default function LyricsDisplay({
       {/* Lines */}
       <div className="space-y-1" onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}>
         {lines.map((line, i) => (
-          <div key={i} data-line-index={i} className={synced && onSeekToLine ? 'cursor-pointer' : ''}>
+          <div key={i} data-line-index={i} className={synced && onSeekToLine ? 'cursor-pointer group' : ''}>
             <LyricsLine
               line={translatedLines?.[i] ?? null}
               rawText={line.text}
               isActive={synced ? i === activeIndex : false}
               showTranslation={showTranslation}
               autoScroll={autoScroll}
+              canSeek={!!(synced && onSeekToLine)}
             />
           </div>
         ))}
