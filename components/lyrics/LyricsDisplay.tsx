@@ -92,6 +92,28 @@ export default function LyricsDisplay({
     }
   }
 
+  function handleTouchEnd() {
+    // iOS long-press selection doesn't fire mouseup, so we check for selected text here.
+    // A short delay lets the selection object settle before we read it.
+    setTimeout(() => {
+      const selection = window.getSelection()
+      if (!selection || selection.rangeCount === 0) return
+
+      // Clone the range and strip rt/rp so furigana isn't included in the saved text.
+      const range = selection.getRangeAt(0)
+      const fragment = range.cloneContents()
+      fragment.querySelectorAll('rt, rp').forEach((el) => el.remove())
+      const tmp = document.createElement('div')
+      tmp.appendChild(fragment)
+      const text = tmp.textContent?.trim() ?? ''
+
+      if (onSelectPhrase && text) {
+        onSelectPhrase(text, activeIndex)
+        selection.removeAllRanges()
+      }
+    }, 50)
+  }
+
   return (
     <div>
       {/* Controls */}
@@ -137,7 +159,7 @@ export default function LyricsDisplay({
       </div>
 
       {/* Lines */}
-      <div className="space-y-1" onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}>
+      <div className="space-y-1" onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onTouchEnd={handleTouchEnd}>
         {lines.map((line, i) => (
           <div key={i} data-line-index={i} className={synced && onSeekToLine ? 'cursor-pointer group' : ''}>
             <LyricsLine
