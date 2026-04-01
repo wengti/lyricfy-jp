@@ -74,7 +74,7 @@ export default function DictionaryPage() {
         <select
           value={sort}
           onChange={(e) => { setSort(e.target.value as DictionarySortOption); resetPage() }}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-base outline-none focus:border-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+          className="rounded-lg border border-gray-300 py-2 pl-1 pr-8 text-base outline-none focus:border-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
         >
           <option value="created_at_desc">Newest first</option>
           <option value="created_at_asc">Oldest first</option>
@@ -86,7 +86,7 @@ export default function DictionaryPage() {
           <select
             value={tagFilter}
             onChange={(e) => { setTagFilter(e.target.value); resetPage() }}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-base outline-none focus:border-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+            className="rounded-lg border border-gray-300 py-2 pl-1 pr-8 text-base outline-none focus:border-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
           >
             <option value="">All tags</option>
             {allTags.map((tag) => (
