@@ -464,7 +464,7 @@ export default function SaveToDictionaryModal({
                         onChange={() => toggleItem(i)}
                         className="mt-1 h-4 w-4 rounded border-gray-300 accent-violet-600"
                       />
-                      <div className="flex-1 space-y-2">
+                      <div className="min-w-0 flex-1 space-y-2">
                         {/* Furigana preview + refresh button */}
                         <div className="flex items-center justify-center gap-2 pb-1">
                           <div className="text-xl text-gray-900 dark:text-gray-100">
