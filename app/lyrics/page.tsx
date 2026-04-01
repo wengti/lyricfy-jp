@@ -503,6 +503,8 @@ export default function LyricsPage() {
           className={`fixed flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg transition-colors hover:bg-indigo-700 ${
             !bannerVisible && !selectedPhrase
               ? 'bottom-24 right-4 sm:bottom-6 sm:right-6'
+              : selectedPhrase
+              ? 'bottom-20 right-4 sm:bottom-6 sm:right-6'
               : 'bottom-6 right-6'
           }`}
         >
