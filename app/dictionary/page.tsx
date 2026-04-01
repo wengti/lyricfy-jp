@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Plus, Search, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useDictionary } from '@/hooks/useDictionary'
-import DictionaryEntryRow from '@/components/dictionary/DictionaryEntry'
+import DictionaryEntryRow, { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntry'
 import AddWordModal from '@/components/dictionary/AddWordModal'
 import EditWordModal from '@/components/dictionary/EditWordModal'
 import type { DictionaryEntry, DictionarySortOption } from '@/types/database'
@@ -123,7 +123,20 @@ export default function DictionaryPage() {
         </div>
       ) : (
         <>
-          <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+          {/* Mobile: card list */}
+          <div className="sm:hidden divide-y divide-gray-100 rounded-2xl border border-gray-200 bg-white dark:divide-gray-800 dark:border-gray-700 dark:bg-gray-900">
+            {pagedEntries.map((entry) => (
+              <DictionaryEntryCard
+                key={entry.id}
+                entry={entry}
+                onEdit={setEditEntry}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+
+          {/* Desktop: table */}
+          <div className="hidden sm:block overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
             <table className="w-full text-left">
               <thead className="border-b border-gray-100 bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-400">
                 <tr>
