@@ -21,6 +21,7 @@ export default function FlashcardCard({ entry, mode, onGotIt, onMissed, isAnswer
   const backSub = mode === 'en-to-jp' ? entry.hiragana : undefined
   const backOriginal = mode === 'jp-to-en' ? entry.japanese_text : undefined
   const backFurigana = mode === 'jp-to-en' ? entry.hiragana : undefined
+  const backEnglish = mode === 'en-to-jp' ? entry.english_translation : undefined
 
   function handleFlip() {
     setFlipped((f) => !f)
@@ -57,6 +58,7 @@ export default function FlashcardCard({ entry, mode, onGotIt, onMissed, isAnswer
         >
           {/* Answer content */}
           <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+            {backEnglish && <p className="mb-2 text-sm text-indigo-400 dark:text-indigo-500">{backEnglish}</p>}
             <p className="text-2xl font-bold text-indigo-900 dark:text-indigo-100">{back}</p>
             {backSub && <p className="mt-2 text-base text-indigo-400 dark:text-indigo-400">{backSub}</p>}
             {backOriginal && (
