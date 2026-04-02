@@ -318,6 +318,35 @@ export default function LyricsPage() {
         </div>
       )}
 
+      {/* Loading skeleton — shown while Spotify status is being determined */}
+      {spotifyLoading && (
+        <div className="animate-pulse">
+          <div className="mb-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 shrink-0 rounded-lg bg-gray-200 dark:bg-gray-800" />
+              <div className="flex-1 space-y-2">
+                <div className="h-5 w-2/3 rounded bg-gray-200 dark:bg-gray-800" />
+                <div className="h-4 w-1/3 rounded bg-gray-200 dark:bg-gray-800" />
+              </div>
+            </div>
+            <div className="mt-3 flex justify-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-800" />
+              <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-800" />
+              <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-800" />
+            </div>
+            <div className="mt-3 h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-800" />
+          </div>
+          <div className="space-y-4">
+            {(['w-full','w-11/12','w-4/5','w-3/4','w-full','w-11/12','w-4/5','w-full','w-3/4','w-4/5'] as const).map((w, i) => (
+              <div key={i} className="space-y-1">
+                <div className={`h-6 rounded bg-gray-200 dark:bg-gray-800 ${w}`} />
+                <div className="h-4 w-4/5 rounded bg-gray-200 dark:bg-gray-800" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Connect Spotify CTA */}
       {!spotifyLoading && !connected && (
         <div className="mb-6 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-gray-300 bg-white py-10 text-center dark:border-gray-700 dark:bg-gray-900">
