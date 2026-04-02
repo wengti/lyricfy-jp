@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { DictionaryEntry } from '@/types/database'
+import RubyText from '@/components/lyrics/RubyText'
 
 interface Props {
   entry: DictionaryEntry
@@ -64,7 +65,11 @@ export default function FlashcardCard({ entry, mode, onGotIt, onMissed }: Props)
             )}
             {entry.example_japanese && (
               <div className="mt-4 px-6 text-center">
-                <p className="text-sm text-indigo-700 dark:text-indigo-300">{entry.example_japanese}</p>
+                <p className="text-sm text-indigo-700 dark:text-indigo-300">
+                  {entry.example_furigana
+                    ? <RubyText tokens={entry.example_furigana} />
+                    : entry.example_japanese}
+                </p>
                 <p className="text-xs text-indigo-400 dark:text-indigo-500">{entry.example_english}</p>
               </div>
             )}
