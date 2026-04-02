@@ -29,7 +29,7 @@ export default function FlashcardCard({ entry, mode, onGotIt, onMissed, isAnswer
 
   return (
     <div
-      className="relative h-72 w-full max-w-sm cursor-pointer"
+      className="relative mx-auto h-72 w-full max-w-sm cursor-pointer"
       style={{ perspective: '1000px' }}
       onClick={handleFlip}
     >
