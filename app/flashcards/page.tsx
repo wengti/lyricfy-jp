@@ -1,14 +1,15 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { CreditCard, Shuffle, RotateCcw } from 'lucide-react'
+import { CreditCard, Shuffle, RotateCcw, Circle, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useDictionary } from '@/hooks/useDictionary'
 import FlashcardCard from '@/components/flashcards/FlashcardCard'
 import SessionSummary from '@/components/flashcards/SessionSummary'
-import type { DictionaryEntry, DictionarySortOption } from '@/types/database'
+import type { DictionaryEntry } from '@/types/database'
 
 type Mode = 'jp-to-en' | 'en-to-jp'
 type Phase = 'setup' | 'session' | 'summary'
+type CardStatus = 'unanswered' | 'got-it' | 'missed'
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -25,8 +26,8 @@ export default function FlashcardsPage() {
   const [tagFilter, setTagFilter] = useState('')
   const [queue, setQueue] = useState<DictionaryEntry[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [gotIt, setGotIt] = useState<DictionaryEntry[]>([])
-  const [missed, setMissed] = useState<DictionaryEntry[]>([])
+  const [statuses, setStatuses] = useState<CardStatus[]>([])
+  const [showGiveUpConfirm, setShowGiveUpConfirm] = useState(false)
 
   const { entries, loading } = useDictionary({ sort: 'created_at_desc', tag: tagFilter })
   const allTags = Array.from(new Set(entries.flatMap((e) => e.tags))).sort()
@@ -35,28 +36,50 @@ export default function FlashcardsPage() {
     const shuffled = shuffle(pool)
     setQueue(shuffled)
     setCurrentIndex(0)
-    setGotIt([])
-    setMissed([])
+    setStatuses(new Array(shuffled.length).fill('unanswered'))
+    setShowGiveUpConfirm(false)
     setPhase('session')
   }
 
   const handleGotIt = useCallback(() => {
-    setGotIt((prev) => [...prev, queue[currentIndex]])
-    if (currentIndex + 1 >= queue.length) {
+    const next = [...statuses]
+    next[currentIndex] = 'got-it'
+    setStatuses(next)
+    if (next.every((s) => s !== 'unanswered')) {
       setPhase('summary')
     } else {
-      setCurrentIndex((i) => i + 1)
+      for (let i = 1; i < next.length; i++) {
+        const candidate = (currentIndex + i) % next.length
+        if (next[candidate] === 'unanswered') {
+          setCurrentIndex(candidate)
+          break
+        }
+      }
     }
-  }, [currentIndex, queue])
+  }, [currentIndex, statuses])
 
   const handleMissed = useCallback(() => {
-    setMissed((prev) => [...prev, queue[currentIndex]])
-    if (currentIndex + 1 >= queue.length) {
+    const next = [...statuses]
+    next[currentIndex] = 'missed'
+    setStatuses(next)
+    if (next.every((s) => s !== 'unanswered')) {
       setPhase('summary')
     } else {
-      setCurrentIndex((i) => i + 1)
+      for (let i = 1; i < next.length; i++) {
+        const candidate = (currentIndex + i) % next.length
+        if (next[candidate] === 'unanswered') {
+          setCurrentIndex(candidate)
+          break
+        }
+      }
     }
-  }, [currentIndex, queue])
+  }, [currentIndex, statuses])
+
+  function handleGiveUp() {
+    setStatuses((prev) => prev.map((s) => (s === 'unanswered' ? 'missed' : s)))
+    setPhase('summary')
+    setShowGiveUpConfirm(false)
+  }
 
   // Setup screen
   if (phase === 'setup') {
@@ -139,31 +162,40 @@ export default function FlashcardsPage() {
   // Session screen
   if (phase === 'session') {
     const current = queue[currentIndex]
-    const progress = ((currentIndex) / queue.length) * 100
 
     return (
       <div className="mx-auto max-w-md px-4 py-10">
-        {/* Progress */}
-        <div className="mb-6">
-          <div className="mb-2 flex justify-between text-xs text-gray-400 dark:text-gray-500">
-            <span>{currentIndex + 1} / {queue.length}</span>
-            <div className="flex items-center gap-3">
-              <span>{gotIt.length} correct, {missed.length} missed</span>
-              <button
-                onClick={() => setPhase('setup')}
-                className="flex items-center gap-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-              >
-                <RotateCcw size={12} />
-                <span>Restart</span>
-              </button>
-            </div>
-          </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
-            <div
-              className="h-full rounded-full bg-indigo-400 transition-all"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+        {/* Status icon grid */}
+        <div className="mb-2 flex flex-wrap gap-1.5">
+          {statuses.map((status, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentIndex(i)}
+              className={`rounded-full transition-all ${i === currentIndex ? 'ring-2 ring-indigo-400 ring-offset-1 dark:ring-offset-gray-950' : ''}`}
+            >
+              {status === 'got-it' ? (
+                <CheckCircle size={16} className="text-green-500" />
+              ) : status === 'missed' ? (
+                <XCircle size={16} className="text-red-400" />
+              ) : (
+                <Circle size={16} className="text-gray-300 dark:text-gray-600" />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Hint + restart */}
+        <div className="mb-6 flex items-center justify-between">
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            Answer all cards to finish, or give up to end early.
+          </p>
+          <button
+            onClick={() => setPhase('setup')}
+            className="flex shrink-0 items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+          >
+            <RotateCcw size={11} />
+            <span>Restart</span>
+          </button>
         </div>
 
         <FlashcardCard
@@ -172,19 +204,73 @@ export default function FlashcardsPage() {
           mode={mode}
           onGotIt={handleGotIt}
           onMissed={handleMissed}
+          isAnswered={statuses[currentIndex] !== 'unanswered'}
         />
+
+        {/* Navigation */}
+        <div className="mt-6 flex items-center justify-between">
+          <button
+            onClick={() => setCurrentIndex((i) => (i - 1 + queue.length) % queue.length)}
+            className="rounded-xl border border-gray-200 bg-white p-3 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800"
+          >
+            <ChevronLeft size={18} />
+          </button>
+
+          <span className="text-xs text-gray-400 dark:text-gray-500">
+            {currentIndex + 1} / {queue.length}
+          </span>
+
+          <button
+            onClick={() => setCurrentIndex((i) => (i + 1) % queue.length)}
+            className="rounded-xl border border-gray-200 bg-white p-3 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+
+        {/* Give Up */}
+        <div className="mt-4 text-center">
+          {showGiveUpConfirm ? (
+            <div className="inline-flex items-center gap-3 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 dark:border-orange-800 dark:bg-orange-900/20">
+              <span className="text-xs text-orange-700 dark:text-orange-300">
+                End session? Unanswered cards count as missed.
+              </span>
+              <button
+                onClick={() => setShowGiveUpConfirm(false)}
+                className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleGiveUp}
+                className="text-xs font-medium text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-200"
+              >
+                Confirm
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowGiveUpConfirm(true)}
+              className="text-xs text-gray-400 underline hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+            >
+              Give up
+            </button>
+          )}
+        </div>
       </div>
     )
   }
 
   // Summary screen
+  const gotItEntries = queue.filter((_, i) => statuses[i] === 'got-it')
+  const missedEntries = queue.filter((_, i) => statuses[i] === 'missed')
   return (
     <div className="mx-auto max-w-md px-4 py-10">
       <h2 className="mb-8 text-center text-xl font-bold text-gray-900 dark:text-gray-100">Session Complete</h2>
       <SessionSummary
-        gotIt={gotIt}
-        missed={missed}
-        onRetryMissed={() => startSession(missed)}
+        gotIt={gotItEntries}
+        missed={missedEntries}
+        onRetryMissed={() => startSession(missedEntries)}
         onStartOver={() => setPhase('setup')}
       />
     </div>

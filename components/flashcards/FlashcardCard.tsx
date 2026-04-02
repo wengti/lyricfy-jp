@@ -9,9 +9,10 @@ interface Props {
   mode: 'jp-to-en' | 'en-to-jp'
   onGotIt: () => void
   onMissed: () => void
+  isAnswered?: boolean
 }
 
-export default function FlashcardCard({ entry, mode, onGotIt, onMissed }: Props) {
+export default function FlashcardCard({ entry, mode, onGotIt, onMissed, isAnswered = false }: Props) {
   const [flipped, setFlipped] = useState(false)
 
   const front = mode === 'jp-to-en' ? entry.japanese_text : entry.english_translation
@@ -77,8 +78,8 @@ export default function FlashcardCard({ entry, mode, onGotIt, onMissed }: Props)
         </div>
       </div>
 
-      {/* Action buttons — only shown after flip */}
-      {flipped && (
+      {/* Action buttons — shown after flip, hidden if already answered */}
+      {flipped && !isAnswered && (
         <div className="flex gap-4">
           <button
             onClick={onMissed}
@@ -93,6 +94,9 @@ export default function FlashcardCard({ entry, mode, onGotIt, onMissed }: Props)
             Got it!
           </button>
         </div>
+      )}
+      {isAnswered && (
+        <p className="text-xs text-gray-400 dark:text-gray-500">Already answered</p>
       )}
     </div>
   )
