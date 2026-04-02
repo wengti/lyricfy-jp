@@ -47,7 +47,12 @@ export default function SessionSummary({ gotIt, missed, stats, onRetryMissed, on
           <div className="space-y-2 text-left">
             {missed.map((e) => (
               <div key={e.id} className="flex items-center justify-between gap-3 rounded-xl border border-red-100 bg-red-50 px-4 py-2 dark:border-red-800 dark:bg-red-900/30">
-                <span className="font-medium text-red-800 dark:text-red-300">{e.japanese_text}</span>
+                <div>
+                  <span className="font-medium text-red-800 dark:text-red-300">{e.japanese_text}</span>
+                  {e.hiragana && (
+                    <p className="text-xs text-red-400 dark:text-red-500">{e.hiragana}</p>
+                  )}
+                </div>
                 <div className="flex items-center gap-2">
                   {stats && <StatBadge stat={stats[e.id]} />}
                   <span className="text-sm text-red-500 dark:text-red-400">{e.english_translation}</span>
