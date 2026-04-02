@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { CreditCard, Shuffle, RotateCcw, Circle, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, useCallback, useEffect } from 'react'
+import { CreditCard, Shuffle, RotateCcw, Circle, CheckCircle, XCircle, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { useDictionary } from '@/hooks/useDictionary'
 import FlashcardCard from '@/components/flashcards/FlashcardCard'
 import SessionSummary from '@/components/flashcards/SessionSummary'
@@ -28,9 +28,54 @@ export default function FlashcardsPage() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [statuses, setStatuses] = useState<CardStatus[]>([])
   const [showGiveUpConfirm, setShowGiveUpConfirm] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [searchQuery, setSearchQuery] = useState('')
 
   const { entries, loading } = useDictionary({ sort: 'created_at_desc', tag: tagFilter })
   const allTags = Array.from(new Set(entries.flatMap((e) => e.tags))).sort()
+
+  // Reset selection to last 30 whenever entries change (tag filter or initial load)
+  useEffect(() => {
+    setSelectedIds(new Set(entries.slice(0, 30).map((e) => e.id)))
+    setSearchQuery('')
+  }, [entries])
+
+  function handleModeChange(m: Mode) {
+    setMode(m)
+    setSearchQuery('')
+    // selectedIds intentionally preserved
+  }
+
+  // Derived values
+  const displayKey = mode === 'jp-to-en' ? 'japanese_text' : 'english_translation'
+
+  const filteredEntries = searchQuery
+    ? entries.filter(
+        (e) =>
+          e[displayKey].toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (mode === 'jp-to-en' && e.hiragana.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    : entries
+
+  const selectedEntries = entries.filter((e) => selectedIds.has(e.id))
+
+  // Shortcut handlers
+  function selectLast30() { setSelectedIds(new Set(entries.slice(0, 30).map((e) => e.id))) }
+  function selectFirst30() { setSelectedIds(new Set(entries.slice(-30).map((e) => e.id))) }
+  function selectRandom30() { setSelectedIds(new Set(shuffle([...entries]).slice(0, 30).map((e) => e.id))) }
+  function selectAll() { setSelectedIds(new Set(entries.map((e) => e.id))) }
+
+  function toggleEntry(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
 
   function startSession(pool: DictionaryEntry[]) {
     const shuffled = shuffle(pool)
@@ -108,7 +153,7 @@ export default function FlashcardsPage() {
                 {(['jp-to-en', 'en-to-jp'] as Mode[]).map((m) => (
                   <button
                     key={m}
-                    onClick={() => setMode(m)}
+                    onClick={() => handleModeChange(m)}
                     className={`rounded-lg border py-3 text-sm font-medium transition-colors ${
                       mode === m
                         ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
@@ -140,17 +185,80 @@ export default function FlashcardsPage() {
               </div>
             )}
 
+            {/* Word selection */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Select words</label>
+
+              {/* Shortcuts */}
+              <div className="mb-3 flex flex-wrap gap-2">
+                {[
+                  { label: 'Last 30', action: selectLast30 },
+                  { label: 'First 30', action: selectFirst30 },
+                  { label: 'Random 30', action: selectRandom30 },
+                  { label: 'All', action: selectAll },
+                ].map(({ label, action }) => (
+                  <button
+                    key={label}
+                    onClick={action}
+                    className="rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:border-indigo-700 dark:hover:bg-indigo-900/20 dark:hover:text-indigo-300"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Search */}
+              <div className="relative mb-2">
+                <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={mode === 'jp-to-en' ? 'Search Japanese…' : 'Search English…'}
+                  className="w-full rounded-lg border border-gray-300 py-2 pl-8 pr-3 text-sm outline-none focus:border-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
+                />
+              </div>
+
+              {/* Word list */}
+              <div className="max-h-56 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                {filteredEntries.length === 0 ? (
+                  <p className="px-3 py-4 text-center text-xs text-gray-400 dark:text-gray-500">No words match your search.</p>
+                ) : (
+                  filteredEntries.map((entry) => {
+                    const checked = selectedIds.has(entry.id)
+                    return (
+                      <label
+                        key={entry.id}
+                        className={`flex cursor-pointer items-center gap-3 px-3 py-2 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                          checked
+                            ? 'bg-indigo-50 dark:bg-indigo-900/20'
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleEntry(entry.id)}
+                          className="h-3.5 w-3.5 rounded accent-indigo-600"
+                        />
+                        <span className={`truncate ${checked ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                          {entry[displayKey]}
+                        </span>
+                      </label>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+
             <div className="border-t border-gray-100 pt-4 dark:border-gray-800">
-              <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">
-                {entries.length} word{entries.length !== 1 ? 's' : ''} will be included
-              </p>
               <button
-                onClick={() => startSession(entries)}
-                disabled={entries.length === 0}
+                onClick={() => startSession(selectedEntries)}
+                disabled={selectedEntries.length === 0}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
               >
                 <Shuffle size={16} />
-                Start session
+                Start session ({selectedEntries.length} word{selectedEntries.length !== 1 ? 's' : ''})
               </button>
             </div>
           </div>
