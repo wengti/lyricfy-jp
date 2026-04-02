@@ -44,7 +44,7 @@ export default function FlashcardCard({ entry, mode, onGotIt, onMissed }: Props)
             className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900"
             style={{ backfaceVisibility: 'hidden' }}
           >
-            <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{front}</p>
+            <p className="px-6 text-center text-3xl font-bold text-gray-900 dark:text-gray-100">{front}</p>
             {!flipped && (
               <p className="mt-6 text-xs text-gray-300 dark:text-gray-600">Tap to reveal</p>
             )}
