@@ -27,6 +27,17 @@ export default function BrowsePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Restore query from sessionStorage after mount
+  useEffect(() => {
+    const saved = sessionStorage.getItem('browse-search-query')
+    if (saved) setQuery(saved)
+  }, [])
+
+  // Persist query to sessionStorage on change
+  useEffect(() => {
+    sessionStorage.setItem('browse-search-query', query)
+  }, [query])
+
   // Debounce query input by 300ms
   useEffect(() => {
     const t = setTimeout(() => setDebounced(query), 300)
