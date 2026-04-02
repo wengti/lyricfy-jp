@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { CreditCard, Shuffle } from 'lucide-react'
+import { CreditCard, Shuffle, RotateCcw } from 'lucide-react'
 import { useDictionary } from '@/hooks/useDictionary'
 import FlashcardCard from '@/components/flashcards/FlashcardCard'
 import SessionSummary from '@/components/flashcards/SessionSummary'
@@ -147,7 +147,16 @@ export default function FlashcardsPage() {
         <div className="mb-6">
           <div className="mb-2 flex justify-between text-xs text-gray-400 dark:text-gray-500">
             <span>{currentIndex + 1} / {queue.length}</span>
-            <span>{gotIt.length} correct, {missed.length} missed</span>
+            <div className="flex items-center gap-3">
+              <span>{gotIt.length} correct, {missed.length} missed</span>
+              <button
+                onClick={() => setPhase('setup')}
+                className="flex items-center gap-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+              >
+                <RotateCcw size={12} />
+                <span>Restart</span>
+              </button>
+            </div>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
             <div
