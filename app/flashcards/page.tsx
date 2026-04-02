@@ -103,11 +103,13 @@ export default function FlashcardsPage() {
         return ra - rb
       })
       .slice(0, 30)
-    if (attempted.length === 0) {
-      selectLast30()
-    } else {
-      setSelectedIds(new Set(attempted.map((e) => e.id)))
+    const selected = new Set(attempted.map((e) => e.id))
+    // Pad up to 30 with latest words not already included
+    for (const e of entries) {
+      if (selected.size >= 30) break
+      if (!selected.has(e.id)) selected.add(e.id)
     }
+    setSelectedIds(selected)
   }
 
   function toggleEntry(id: string) {
