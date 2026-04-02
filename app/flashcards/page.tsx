@@ -3,9 +3,10 @@
 import { useState, useCallback, useEffect } from 'react'
 import { CreditCard, Shuffle, RotateCcw, Circle, CheckCircle, XCircle, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { useDictionary } from '@/hooks/useDictionary'
+import { useWordStats } from '@/hooks/useWordStats'
 import FlashcardCard from '@/components/flashcards/FlashcardCard'
 import SessionSummary from '@/components/flashcards/SessionSummary'
-import type { DictionaryEntry } from '@/types/database'
+import type { DictionaryEntry, WordStat } from '@/types/database'
 
 type Mode = 'jp-to-en' | 'en-to-jp'
 type Phase = 'setup' | 'session' | 'summary'
@@ -18,6 +19,24 @@ function shuffle<T>(arr: T[]): T[] {
     ;[a[i], a[j]] = [a[j], a[i]]
   }
   return a
+}
+
+function buildResults(q: DictionaryEntry[], s: CardStatus[]) {
+  return q.map((e, i) => ({ word_id: e.id, got_it: s[i] === 'got-it' }))
+}
+
+function StatBadge({ stat }: { stat: WordStat | undefined }) {
+  if (!stat || stat.attempt_count === 0) return null
+  const pct = Math.round((stat.success_count / stat.attempt_count) * 100)
+  const color =
+    pct >= 80 ? 'text-green-600 dark:text-green-400' :
+    pct >= 50 ? 'text-yellow-600 dark:text-yellow-400' :
+                'text-red-600 dark:text-red-400'
+  return (
+    <span className={`shrink-0 text-xs font-medium ${color}`}>
+      {pct}%<span className="font-normal text-gray-400 dark:text-gray-500"> · {stat.attempt_count}×</span>
+    </span>
+  )
 }
 
 export default function FlashcardsPage() {
@@ -33,6 +52,7 @@ export default function FlashcardsPage() {
   const [wordListPage, setWordListPage] = useState(1)
 
   const { entries, loading } = useDictionary({ sort: 'created_at_desc', tag: tagFilter })
+  const { stats, submitSession } = useWordStats()
   const allTags = Array.from(new Set(entries.flatMap((e) => e.tags))).sort()
 
   // Reset selection to last 30 whenever entries change (tag filter or initial load)
@@ -74,6 +94,21 @@ export default function FlashcardsPage() {
   function selectFirst30() { setSelectedIds(new Set(entries.slice(-30).map((e) => e.id))) }
   function selectRandom30() { setSelectedIds(new Set(shuffle([...entries]).slice(0, 30).map((e) => e.id))) }
   function selectAll() { setSelectedIds(new Set(entries.map((e) => e.id))) }
+  function selectStruggling30() {
+    const attempted = entries
+      .filter((e) => (stats[e.id]?.attempt_count ?? 0) > 0)
+      .sort((a, b) => {
+        const ra = stats[a.id]!.success_count / stats[a.id]!.attempt_count
+        const rb = stats[b.id]!.success_count / stats[b.id]!.attempt_count
+        return ra - rb
+      })
+      .slice(0, 30)
+    if (attempted.length === 0) {
+      selectLast30()
+    } else {
+      setSelectedIds(new Set(attempted.map((e) => e.id)))
+    }
+  }
 
   function toggleEntry(id: string) {
     setSelectedIds((prev) => {
@@ -101,6 +136,7 @@ export default function FlashcardsPage() {
     next[currentIndex] = 'got-it'
     setStatuses(next)
     if (next.every((s) => s !== 'unanswered')) {
+      submitSession(buildResults(queue, next))
       setPhase('summary')
     } else {
       for (let i = 1; i < next.length; i++) {
@@ -111,13 +147,14 @@ export default function FlashcardsPage() {
         }
       }
     }
-  }, [currentIndex, statuses])
+  }, [currentIndex, statuses, queue, submitSession])
 
   const handleMissed = useCallback(() => {
     const next = [...statuses]
     next[currentIndex] = 'missed'
     setStatuses(next)
     if (next.every((s) => s !== 'unanswered')) {
+      submitSession(buildResults(queue, next))
       setPhase('summary')
     } else {
       for (let i = 1; i < next.length; i++) {
@@ -128,10 +165,12 @@ export default function FlashcardsPage() {
         }
       }
     }
-  }, [currentIndex, statuses])
+  }, [currentIndex, statuses, queue, submitSession])
 
   function handleGiveUp() {
-    setStatuses((prev) => prev.map((s) => (s === 'unanswered' ? 'missed' : s)))
+    const finalStatuses = statuses.map((s) => (s === 'unanswered' ? 'missed' : s))
+    setStatuses(finalStatuses)
+    submitSession(buildResults(queue, finalStatuses))
     setPhase('summary')
     setShowGiveUpConfirm(false)
   }
@@ -206,6 +245,7 @@ export default function FlashcardsPage() {
                   { label: 'First 30', action: selectFirst30 },
                   { label: 'Random 30', action: selectRandom30 },
                   { label: 'All', action: selectAll },
+                  { label: 'Struggling 30', action: selectStruggling30 },
                   { label: 'Clear', action: () => setSelectedIds(new Set()) },
                 ].map(({ label, action }) => (
                   <button
@@ -252,9 +292,10 @@ export default function FlashcardsPage() {
                           onChange={() => toggleEntry(entry.id)}
                           className="h-3.5 w-3.5 rounded accent-indigo-600"
                         />
-                        <span className={`truncate ${checked ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                        <span className={`flex-1 truncate ${checked ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300'}`}>
                           {entry[displayKey]}
                         </span>
+                        <StatBadge stat={stats[entry.id]} />
                       </label>
                     )
                   })
@@ -414,6 +455,7 @@ export default function FlashcardsPage() {
       <SessionSummary
         gotIt={gotItEntries}
         missed={missedEntries}
+        stats={stats}
         onRetryMissed={() => startSession(missedEntries)}
         onStartOver={() => setPhase('setup')}
       />

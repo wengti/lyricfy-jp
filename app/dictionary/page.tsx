@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Plus, Search, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useDictionary } from '@/hooks/useDictionary'
+import { useWordStats } from '@/hooks/useWordStats'
 import DictionaryEntryRow, { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntry'
 import AddWordModal from '@/components/dictionary/AddWordModal'
 import EditWordModal from '@/components/dictionary/EditWordModal'
@@ -19,16 +20,26 @@ export default function DictionaryPage() {
   const [editEntry, setEditEntry] = useState<DictionaryEntry | null>(null)
 
   const { entries, loading, error, addEntry, updateEntry, deleteEntry } = useDictionary({
-    sort,
+    sort: sort === 'success_rate_asc' ? 'created_at_desc' : sort,
     search,
     tag: tagFilter,
   })
+  const { stats } = useWordStats()
 
   // Collect all unique tags from current entries for the filter dropdown
   const allTags = Array.from(new Set(entries.flatMap((e) => e.tags))).sort()
 
-  const totalPages = Math.ceil(entries.length / PAGE_SIZE)
-  const pagedEntries = entries.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const sortedEntries = sort === 'success_rate_asc'
+    ? [...entries].sort((a, b) => {
+        const sa = stats[a.id], sb = stats[b.id]
+        const ra = sa && sa.attempt_count > 0 ? sa.success_count / sa.attempt_count : 2
+        const rb = sb && sb.attempt_count > 0 ? sb.success_count / sb.attempt_count : 2
+        return ra - rb
+      })
+    : entries
+
+  const totalPages = Math.ceil(sortedEntries.length / PAGE_SIZE)
+  const pagedEntries = sortedEntries.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   function resetPage() { setPage(0) }
 
@@ -80,6 +91,7 @@ export default function DictionaryPage() {
           <option value="created_at_asc">Oldest first</option>
           <option value="japanese_asc">Japanese A→Z</option>
           <option value="english_asc">English A→Z</option>
+          <option value="success_rate_asc">Lowest success rate</option>
         </select>
 
         {allTags.length > 0 && (
@@ -129,6 +141,7 @@ export default function DictionaryPage() {
               <DictionaryEntryCard
                 key={entry.id}
                 entry={entry}
+                stat={stats[entry.id]}
                 onEdit={setEditEntry}
                 onDelete={handleDelete}
               />
@@ -143,6 +156,7 @@ export default function DictionaryPage() {
                   <th className="px-4 py-3">Japanese</th>
                   <th className="px-4 py-3">English</th>
                   <th className="px-4 py-3">Example</th>
+                  <th className="px-4 py-3">Score</th>
                   <th className="px-4 py-3 w-40">Source / Tags</th>
                   <th className="px-4 py-3" />
                 </tr>
@@ -152,6 +166,7 @@ export default function DictionaryPage() {
                   <DictionaryEntryRow
                     key={entry.id}
                     entry={entry}
+                    stat={stats[entry.id]}
                     onEdit={setEditEntry}
                     onDelete={handleDelete}
                   />

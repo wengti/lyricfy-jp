@@ -153,6 +153,60 @@ create table public.lyrics_cache (
 );
 
 -- ============================================================
+-- word_stats
+-- Per-user flashcard attempt tracking.
+-- Updated atomically via record_session_results() RPC.
+-- ============================================================
+create table public.word_stats (
+  id                uuid primary key default gen_random_uuid(),
+  user_id           uuid not null references auth.users(id) on delete cascade,
+  word_id           uuid not null references public.dictionary_entries(id) on delete cascade,
+  attempt_count     int  not null default 0,
+  success_count     int  not null default 0,
+  last_attempted_at timestamptz,
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now(),
+  unique (user_id, word_id)
+);
+
+create index idx_word_stats_user_id on public.word_stats(user_id);
+
+alter table public.word_stats enable row level security;
+
+create policy "own word stats" on public.word_stats
+  using  (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+create trigger trg_word_stats_upd
+  before update on public.word_stats
+  for each row execute function public.set_updated_at();
+
+-- Atomic batch upsert — called from /api/word-stats POST
+create or replace function public.record_session_results(p_results jsonb)
+returns void language plpgsql security definer as $$
+declare
+  r      jsonb;
+  v_user uuid := auth.uid();
+begin
+  if v_user is null then raise exception 'Unauthorized'; end if;
+  for r in select * from jsonb_array_elements(p_results) loop
+    insert into public.word_stats(user_id, word_id, attempt_count, success_count, last_attempted_at)
+    values (
+      v_user,
+      (r->>'word_id')::uuid,
+      1,
+      case when (r->>'got_it')::boolean then 1 else 0 end,
+      now()
+    )
+    on conflict (user_id, word_id) do update set
+      attempt_count     = word_stats.attempt_count + 1,
+      success_count     = word_stats.success_count + (case when (r->>'got_it')::boolean then 1 else 0 end),
+      last_attempted_at = now();
+  end loop;
+end;
+$$;
+
+-- ============================================================
 -- search_lyrics_cache(keyword text)
 -- Full-text search over track_name, artist, and the
 -- translated_lines JSONB cast to text.

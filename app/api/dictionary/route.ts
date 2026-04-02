@@ -8,6 +8,7 @@ const SORT_MAP: Record<DictionarySortOption, string> = {
   created_at_asc: 'created_at',
   japanese_asc: 'japanese_text',
   english_asc: 'english_translation',
+  success_rate_asc: 'created_at', // client-side sort; server falls back to created_at
 }
 
 const insertSchema = z.object({

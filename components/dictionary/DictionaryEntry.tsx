@@ -1,5 +1,5 @@
 import { Pencil, Trash2 } from 'lucide-react'
-import type { DictionaryEntry } from '@/types/database'
+import type { DictionaryEntry, WordStat } from '@/types/database'
 import type { FuriganaToken } from '@/types/ai'
 
 function FuriganaText({ tokens, fallback }: { tokens: FuriganaToken[]; fallback: string }) {
@@ -22,14 +22,29 @@ function FuriganaText({ tokens, fallback }: { tokens: FuriganaToken[]; fallback:
   )
 }
 
+function StatBadge({ stat }: { stat: WordStat | undefined }) {
+  if (!stat || stat.attempt_count === 0) return null
+  const pct = Math.round((stat.success_count / stat.attempt_count) * 100)
+  const color =
+    pct >= 80 ? 'text-green-600 dark:text-green-400' :
+    pct >= 50 ? 'text-yellow-600 dark:text-yellow-400' :
+                'text-red-600 dark:text-red-400'
+  return (
+    <span className={`shrink-0 text-xs font-medium ${color}`}>
+      {pct}%<span className="font-normal text-gray-400 dark:text-gray-500"> · {stat.attempt_count}×</span>
+    </span>
+  )
+}
+
 interface Props {
   entry: DictionaryEntry
   onEdit: (entry: DictionaryEntry) => void
   onDelete: (id: string) => void
+  stat?: WordStat
 }
 
 /** Desktop table row — used inside <tbody> on sm+ screens */
-export default function DictionaryEntryRow({ entry, onEdit, onDelete }: Props) {
+export default function DictionaryEntryRow({ entry, onEdit, onDelete, stat }: Props) {
   return (
     <tr className="border-b border-gray-100 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800/50">
       <td className="px-4 py-3">
@@ -48,6 +63,9 @@ export default function DictionaryEntryRow({ entry, onEdit, onDelete }: Props) {
             <div className="text-gray-400 dark:text-gray-500">{entry.example_english}</div>
           </div>
         )}
+      </td>
+      <td className="px-4 py-3">
+        <StatBadge stat={stat} />
       </td>
       <td className="px-4 py-3 max-w-0 w-40">
         {entry.source_song && (
@@ -95,15 +113,20 @@ export default function DictionaryEntryRow({ entry, onEdit, onDelete }: Props) {
 }
 
 /** Mobile card — used in a stacked list on screens narrower than sm */
-export function DictionaryEntryCard({ entry, onEdit, onDelete }: Props) {
+export function DictionaryEntryCard({ entry, onEdit, onDelete, stat }: Props) {
   return (
     <div className="px-4 py-3">
-      {/* Word + actions */}
+      {/* Word + stat + actions */}
       <div className="flex items-start justify-between gap-2">
-        <div>
+        <div className="min-w-0">
           <span className="font-medium text-gray-900 dark:text-gray-100">{entry.japanese_text}</span>
           {entry.hiragana && (
             <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">{entry.hiragana}</span>
+          )}
+          {stat && (
+            <span className="ml-2">
+              <StatBadge stat={stat} />
+            </span>
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1">

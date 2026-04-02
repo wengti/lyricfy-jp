@@ -29,6 +29,14 @@ export type DictionarySortOption =
   | 'created_at_asc'
   | 'japanese_asc'
   | 'english_asc'
+  | 'success_rate_asc'
+
+export interface WordStat {
+  word_id: string
+  attempt_count: number
+  success_count: number
+  last_attempted_at: string | null
+}
 
 export interface SpotifyToken {
   id: string
