@@ -11,7 +11,7 @@ Japanese language learning web app. Users connect Spotify, see live karaoke lyri
 | Framework | Next.js 15 (App Router, TypeScript, `--no-src-dir`) |
 | Styling | Tailwind CSS v4 — configured via `postcss.config.mjs`, no `tailwind.config.ts` |
 | Database | Supabase (Postgres + Auth + RLS) |
-| AI | OpenRouter → `google/gemma-3-27b-it:free` |
+| AI | OpenRouter → `google/gemini-2.0-flash-001` |
 | Lyrics | lrclib.net (primary) → Genius API scraping (fallback) → manual paste |
 | Music | Spotify Web API (OAuth, `currently-playing` with `progress_ms`) |
 
