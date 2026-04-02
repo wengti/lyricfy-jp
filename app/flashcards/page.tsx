@@ -158,6 +158,7 @@ export default function FlashcardsPage() {
         </div>
 
         <FlashcardCard
+          key={currentIndex}
           entry={current}
           mode={mode}
           onGotIt={handleGotIt}
