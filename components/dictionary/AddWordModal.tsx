@@ -134,7 +134,6 @@ export default function AddWordModal({ onClose, onSave, prefill }: Props) {
                 required
                 value={form.japanese_text}
                 onChange={(e) => set('japanese_text', e.target.value)}
-                onBlur={handleEnrich}
                 className={`flex-1 ${inputCls}`}
                 placeholder="例：桜"
               />
