@@ -37,6 +37,7 @@ JSON format:
 
 ${rules}
 - NEVER skip a line — both arrays must have exactly ${lines.length} entries
+- CRITICAL: the "original" field of every token must reproduce the source text character-for-character. Do NOT convert hiragana to kanji, do NOT normalize, do NOT correct or alter any character.
 - Output must start with { and end with }
 
 Lines (${lines.length} total):

@@ -20,8 +20,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const results = await generateFuriganaAndTranslations([parsed.data.text], apiKey)
-    return NextResponse.json({ furigana: results[0]?.tokens ?? [] })
+    const results = await generateFuriganaAndTranslations([parsed.data.text], apiKey, true)
+    const tokens = results[0]?.tokens ?? []
+    if (tokens.length === 0) {
+      return NextResponse.json({ error: 'Could not annotate this text. Please retry.' }, { status: 500 })
+    }
+    return NextResponse.json({ furigana: tokens })
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 })
   }
