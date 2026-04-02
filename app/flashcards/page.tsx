@@ -30,6 +30,7 @@ export default function FlashcardsPage() {
   const [showGiveUpConfirm, setShowGiveUpConfirm] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState('')
+  const [wordListPage, setWordListPage] = useState(1)
 
   const { entries, loading } = useDictionary({ sort: 'created_at_desc', tag: tagFilter })
   const allTags = Array.from(new Set(entries.flatMap((e) => e.tags))).sort()
@@ -38,6 +39,7 @@ export default function FlashcardsPage() {
   useEffect(() => {
     setSelectedIds(new Set(entries.slice(0, 30).map((e) => e.id)))
     setSearchQuery('')
+    setWordListPage(1)
   }, [entries])
 
   function handleModeChange(m: Mode) {
@@ -56,6 +58,14 @@ export default function FlashcardsPage() {
           (mode === 'jp-to-en' && e.hiragana.toLowerCase().includes(searchQuery.toLowerCase()))
       )
     : entries
+
+  const WORD_PAGE_SIZE = 8
+  const totalWordPages = Math.max(1, Math.ceil(filteredEntries.length / WORD_PAGE_SIZE))
+  const clampedWordListPage = Math.min(wordListPage, totalWordPages)
+  const pagedEntries = filteredEntries.slice(
+    (clampedWordListPage - 1) * WORD_PAGE_SIZE,
+    clampedWordListPage * WORD_PAGE_SIZE
+  )
 
   const selectedEntries = entries.filter((e) => selectedIds.has(e.id))
 
@@ -213,18 +223,18 @@ export default function FlashcardsPage() {
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => { setSearchQuery(e.target.value); setWordListPage(1) }}
                   placeholder={mode === 'jp-to-en' ? 'Search Japanese…' : 'Search English…'}
                   className="w-full rounded-lg border border-gray-300 py-2 pl-8 pr-3 text-sm outline-none focus:border-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
                 />
               </div>
 
               {/* Word list */}
-              <div className="max-h-56 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="rounded-lg border border-gray-200 dark:border-gray-700">
                 {filteredEntries.length === 0 ? (
                   <p className="px-3 py-4 text-center text-xs text-gray-400 dark:text-gray-500">No words match your search.</p>
                 ) : (
-                  filteredEntries.map((entry) => {
+                  pagedEntries.map((entry) => {
                     const checked = selectedIds.has(entry.id)
                     return (
                       <label
@@ -249,6 +259,29 @@ export default function FlashcardsPage() {
                   })
                 )}
               </div>
+
+              {/* Pagination */}
+              {totalWordPages > 1 && (
+                <div className="mt-2 flex items-center justify-between">
+                  <button
+                    onClick={() => setWordListPage((p) => Math.max(1, p - 1))}
+                    disabled={clampedWordListPage === 1}
+                    className="rounded-md border border-gray-200 p-1 text-gray-500 hover:bg-gray-50 disabled:opacity-30 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                    {clampedWordListPage} / {totalWordPages}
+                  </span>
+                  <button
+                    onClick={() => setWordListPage((p) => Math.min(totalWordPages, p + 1))}
+                    disabled={clampedWordListPage === totalWordPages}
+                    className="rounded-md border border-gray-200 p-1 text-gray-500 hover:bg-gray-50 disabled:opacity-30 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="border-t border-gray-100 pt-4 dark:border-gray-800">
