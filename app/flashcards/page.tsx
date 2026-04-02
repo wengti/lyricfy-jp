@@ -206,6 +206,7 @@ export default function FlashcardsPage() {
                   { label: 'First 30', action: selectFirst30 },
                   { label: 'Random 30', action: selectRandom30 },
                   { label: 'All', action: selectAll },
+                  { label: 'Clear', action: () => setSelectedIds(new Set()) },
                 ].map(({ label, action }) => (
                   <button
                     key={label}
