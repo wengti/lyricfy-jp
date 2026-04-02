@@ -21,7 +21,7 @@ export default function FlashcardCard({ entry, mode, onGotIt, onMissed }: Props)
   const backFurigana = mode === 'jp-to-en' ? entry.hiragana : undefined
 
   function handleFlip() {
-    if (!flipped) setFlipped(true)
+    setFlipped((f) => !f)
   }
 
   return (
