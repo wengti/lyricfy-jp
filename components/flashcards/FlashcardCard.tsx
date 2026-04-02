@@ -14,9 +14,10 @@ export default function FlashcardCard({ entry, mode, onGotIt, onMissed }: Props)
   const [flipped, setFlipped] = useState(false)
 
   const front = mode === 'jp-to-en' ? entry.japanese_text : entry.english_translation
-  const frontSub = mode === 'jp-to-en' ? entry.hiragana : undefined
   const back = mode === 'jp-to-en' ? entry.english_translation : entry.japanese_text
   const backSub = mode === 'en-to-jp' ? entry.hiragana : undefined
+  const backOriginal = mode === 'jp-to-en' ? entry.japanese_text : undefined
+  const backFurigana = mode === 'jp-to-en' ? entry.hiragana : undefined
 
   function handleFlip() {
     if (!flipped) setFlipped(true)
@@ -43,7 +44,6 @@ export default function FlashcardCard({ entry, mode, onGotIt, onMissed }: Props)
             style={{ backfaceVisibility: 'hidden' }}
           >
             <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{front}</p>
-            {frontSub && <p className="mt-2 text-base text-gray-400 dark:text-gray-500">{frontSub}</p>}
             {!flipped && (
               <p className="mt-6 text-xs text-gray-300 dark:text-gray-600">Tap to reveal</p>
             )}
@@ -56,6 +56,12 @@ export default function FlashcardCard({ entry, mode, onGotIt, onMissed }: Props)
           >
             <p className="text-2xl font-bold text-indigo-900 dark:text-indigo-100">{back}</p>
             {backSub && <p className="mt-2 text-base text-indigo-400 dark:text-indigo-400">{backSub}</p>}
+            {backOriginal && (
+              <div className="mt-3 text-center">
+                <p className="text-base font-medium text-indigo-700 dark:text-indigo-300">{backOriginal}</p>
+                {backFurigana && <p className="mt-0.5 text-sm text-indigo-400 dark:text-indigo-500">{backFurigana}</p>}
+              </div>
+            )}
             {entry.example_japanese && (
               <div className="mt-4 px-6 text-center">
                 <p className="text-sm text-indigo-700 dark:text-indigo-300">{entry.example_japanese}</p>
