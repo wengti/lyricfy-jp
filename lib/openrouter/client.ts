@@ -83,6 +83,16 @@ export async function openRouterChat(options: OpenRouterOptions): Promise<string
       break
     }
 
+    if (res.status === 504 || res.status === 502 || res.status === 503) {
+      const text = await res.text()
+      lastError = new Error(`OpenRouter error ${res.status}: ${text}`)
+      if (attempt < RETRY_DELAYS_MS.length) {
+        await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]))
+        continue
+      }
+      break
+    }
+
     if (!res.ok) {
       const text = await res.text()
       lastError = new Error(`OpenRouter error ${res.status}: ${text}`)
