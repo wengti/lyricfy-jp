@@ -65,7 +65,7 @@ Most popular songs are already in the shared cache — you can read lyrics and t
 | Framework | Next.js 15 (App Router, TypeScript) |
 | Styling | Tailwind CSS v4 |
 | Database & Auth | Supabase (Postgres + RLS) |
-| AI | OpenRouter → `google/gemini-2.0-flash-001` |
+| AI | OpenRouter → `google/gemini-2.5-flash` |
 | Lyrics sources | lrclib.net (primary) · Genius scraping (fallback) · manual paste |
 | Music | Spotify Web API |
 | Deployment | Vercel |
