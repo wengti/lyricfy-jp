@@ -92,7 +92,7 @@ export default function FlashcardsPage() {
   // Shortcut handlers
   function selectLast30() { setSelectedIds(new Set(entries.slice(0, 30).map((e) => e.id))) }
   function selectFirst30() { setSelectedIds(new Set(entries.slice(-30).map((e) => e.id))) }
-  function selectRandom30() { setSelectedIds(new Set(shuffle([...entries]).slice(0, 30).map((e) => e.id))) }
+  function selectRandom30() { setSelectedIds(new Set(shuffle([...entries].slice(30)).slice(0, 30).map((e) => e.id))) }
   function selectAll() { setSelectedIds(new Set(entries.map((e) => e.id))) }
   function selectStruggling30() {
     const attempted = entries
